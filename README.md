@@ -1,2 +1,2 @@
 # TSSAD-Backend-Service
-For managing all back-end tasks.
+For handle all back-end tasks.
