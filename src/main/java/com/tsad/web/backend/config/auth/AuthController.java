@@ -41,14 +41,13 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
-                                    @RequestBody LoginRequest request) {
+    public ResponseEntity<?> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         String token = tokenService.extractToken(authorizationHeader);
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
         UserAuthJpaEntity user = userAuthJpaRepository.findByToken(token);
-        if (user != null && user.getPassword().equals(request.getPassword())) {
+        if (user != null) {
 
             user.setToken(null);
             user.setUpdatedDatetime(new Date());
