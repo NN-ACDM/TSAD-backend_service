@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigInteger;
+import java.util.Date;
 
 @Entity
 @Table(name = "user_auth")
@@ -23,4 +24,10 @@ public class UserAuthJpaEntity {
 
     @Column(name = "token")
     private String token;
+
+    @Column(name = "created_datetime")
+    private Date createdDatetime;
+
+    @Column(name = "updated_datetime")
+    private Date updatedDatetime;
 }

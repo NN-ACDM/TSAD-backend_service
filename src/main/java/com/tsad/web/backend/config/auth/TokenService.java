@@ -4,8 +4,8 @@ import com.tsad.web.backend.repository.webservicedb.jpa.UserAuthJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.UUID;
 
@@ -15,7 +15,7 @@ public class TokenService {
     @Autowired
     private UserAuthJpaRepository userAuthJpaRepository;
 
-    @Transactional
+
     public String generateToken() {
         String token = UUID.randomUUID().toString();
         while (!ObjectUtils.isEmpty(userAuthJpaRepository.findByToken(token))) {
@@ -24,7 +24,7 @@ public class TokenService {
         return token;
     }
 
-    @Transactional
+
     public void validateAndConsumeToken(String token) {
         UserAuthJpaEntity user = userAuthJpaRepository.findByToken(token);
 
@@ -34,5 +34,12 @@ public class TokenService {
 
         user.setToken(this.generateToken());
         userAuthJpaRepository.save(user);
+    }
+
+    public String extractToken(String authorizationHeader) {
+        if (StringUtils.hasText(authorizationHeader) && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        }
+        return null;
     }
 }
