@@ -1,4 +1,4 @@
-package com.tsad.web.backend.config.auth;
+package com.tsad.web.backend.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

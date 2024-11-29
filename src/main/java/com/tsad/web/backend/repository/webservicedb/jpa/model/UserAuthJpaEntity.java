@@ -16,6 +16,9 @@ public class UserAuthJpaEntity {
     @Column(name = "id")
     private BigInteger id;
 
+    @Column(name = "user_profile_id")
+    private BigInteger userProfileId;
+
     @Column(name = "username")
     private String username;
 
@@ -25,8 +28,17 @@ public class UserAuthJpaEntity {
     @Column(name = "token")
     private String token;
 
+    @Column(name = "level")
+    private String level;
+
+    @Column(name = "create_by")
+    private BigInteger createBy;
+
     @Column(name = "created_datetime")
     private Date createdDatetime;
+
+    @Column(name = "update_by")
+    private BigInteger updateBy;
 
     @Column(name = "updated_datetime")
     private Date updatedDatetime;

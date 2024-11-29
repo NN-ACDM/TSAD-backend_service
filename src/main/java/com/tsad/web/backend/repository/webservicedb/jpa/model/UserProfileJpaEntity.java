@@ -31,8 +31,14 @@ public class UserProfileJpaEntity {
     @Column(name = "professional_license")
     private String professionalLicense;
 
+    @Column(name = "create_by")
+    private BigInteger createBy;
+
     @Column(name = "created_datetime")
     private Date createdDatetime;
+
+    @Column(name = "update_by")
+    private BigInteger updateBy;
 
     @Column(name = "updated_datetime")
     private Date updatedDatetime;

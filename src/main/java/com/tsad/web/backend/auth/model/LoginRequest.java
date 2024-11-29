@@ -1,4 +1,4 @@
-package com.tsad.web.backend.config.auth.model;
+package com.tsad.web.backend.auth.model;
 
 import lombok.Data;
 

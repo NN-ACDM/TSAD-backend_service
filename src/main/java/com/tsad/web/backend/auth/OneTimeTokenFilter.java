@@ -1,4 +1,4 @@
-package com.tsad.web.backend.config.auth;
+package com.tsad.web.backend.auth;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,7 +15,7 @@ import java.io.IOException;
 public class OneTimeTokenFilter extends OncePerRequestFilter {
 
     @Autowired
-    private TokenService tokenService;
+    private CredentialService credentialService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -40,7 +40,7 @@ public class OneTimeTokenFilter extends OncePerRequestFilter {
             if (rqToken != null && rqToken.startsWith("Bearer ")) {
                 rqToken = rqToken.substring(7);
                 try {
-                    tokenService.validateAndConsumeToken(rqToken);
+                    credentialService.validateAndConsumeToken(rqToken);
                 } catch (IllegalArgumentException e) {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.getWriter().write("Invalid or expired token");

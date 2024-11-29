@@ -1,4 +1,4 @@
-package com.tsad.web.backend.config.auth;
+package com.tsad.web.backend.auth;
 
 import com.tsad.web.backend.repository.webservicedb.jpa.UserAuthJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
@@ -7,14 +7,21 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 
 @Component
-public class TokenService {
+public class CredentialService {
 
     @Autowired
     private UserAuthJpaRepository userAuthJpaRepository;
 
+    public String generateDefaultPassword(String username) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        return String.format("TSAD-%s?%s", calendar.get(Calendar.YEAR), username);
+    }
 
     public String generateToken() {
         String token = UUID.randomUUID().toString();
@@ -23,7 +30,6 @@ public class TokenService {
         }
         return token;
     }
-
 
     public void validateAndConsumeToken(String token) {
         UserAuthJpaEntity user = userAuthJpaRepository.findByToken(token);

@@ -1,7 +1,7 @@
-package com.tsad.web.backend.config.auth;
+package com.tsad.web.backend.auth;
 
-import com.tsad.web.backend.config.auth.model.LoginRequest;
-import com.tsad.web.backend.config.auth.model.LoginResponse;
+import com.tsad.web.backend.auth.model.LoginRequest;
+import com.tsad.web.backend.auth.model.LoginResponse;
 import com.tsad.web.backend.repository.webservicedb.jpa.UserAuthJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +21,14 @@ public class AuthController {
     private UserAuthJpaRepository userAuthJpaRepository;
 
     @Autowired
-    private TokenService tokenService;
+    private CredentialService credentialService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         UserAuthJpaEntity user = userAuthJpaRepository.findByUsername(request.getUsername());
         if (user != null && user.getPassword().equals(request.getPassword())) {
             //  Generate token
-            String token = tokenService.generateToken();
+            String token = credentialService.generateToken();
 
             user.setToken(token);
             user.setUpdatedDatetime(new Date());
@@ -42,7 +42,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
-        String token = tokenService.extractToken(authorizationHeader);
+        String token = credentialService.extractToken(authorizationHeader);
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }

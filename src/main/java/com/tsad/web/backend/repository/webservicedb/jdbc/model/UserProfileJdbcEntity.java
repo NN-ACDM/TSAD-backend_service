@@ -6,13 +6,13 @@ import java.math.BigInteger;
 import java.util.Date;
 
 @Data
-public class UserAuthJdbcEntity {
+public class UserProfileJdbcEntity {
     private BigInteger id;
-    private BigInteger userProfileId;
-    private String username;
-    private String password;
-    private String token;
-    private String level;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String mobile;
+    private String professionalLicense;
     private BigInteger createBy;
     private Date createdDatetime;
     private BigInteger updateBy;
