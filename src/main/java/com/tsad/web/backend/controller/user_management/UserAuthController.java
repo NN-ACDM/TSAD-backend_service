@@ -1,6 +1,7 @@
 package com.tsad.web.backend.controller.user_management;
 
 import com.tsad.web.backend.auth.CredentialService;
+import com.tsad.web.backend.common.RequestHeaderName;
 import com.tsad.web.backend.controller.user_management.model.UserProfileRq;
 import com.tsad.web.backend.repository.webservicedb.jpa.UserAuthJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
@@ -16,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import static com.tsad.web.backend.controller.CommonHeader.USERNAME;
-
 @Controller
 @RequestMapping("/admin/user")
 public class UserAuthController {
@@ -32,14 +31,14 @@ public class UserAuthController {
     private UserAuthJpaRepository userAuthJpaRepository;
 
     @PutMapping("/add")
-    public ResponseEntity<?> addUser(@RequestHeader(USERNAME) String username,
+    public ResponseEntity<?> addUser(@RequestHeader(RequestHeaderName.USERNAME) String username,
                                      @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
                                      @RequestBody UserProfileRq rq) {
 
         String token = credentialService.extractToken(authorizationHeader);
 
         if (ObjectUtils.isEmpty(username) || ObjectUtils.isEmpty(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("missing necessary header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing necessary header");
         }
 
         UserAuthJpaEntity user = userAuthJpaRepository.findByToken(token);

@@ -1,6 +1,7 @@
 package com.tsad.web.backend.service.user_management;
 
 import com.tsad.web.backend.auth.CredentialService;
+import com.tsad.web.backend.common.UserLevel;
 import com.tsad.web.backend.controller.user_management.model.UserProfileRq;
 import com.tsad.web.backend.repository.webservicedb.jpa.UserAuthJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.UserProfileJpaRepository;
@@ -62,7 +63,7 @@ public class UserManagementService {
     }
 
     private String getLevel(UserProfileRq rq) {
-        return ObjectUtils.isEmpty(rq.getLevel()) ? rq.getLevel() : "member";
+        return ObjectUtils.isEmpty(rq.getLevel()) ? rq.getLevel() : UserLevel.MEMBER.toString();
     }
 
     public void addUserByRegisterForm() {
