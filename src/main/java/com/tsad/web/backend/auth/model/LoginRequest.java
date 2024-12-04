@@ -1,15 +1,14 @@
 package com.tsad.web.backend.auth.model;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class LoginRequest {
-    private String username;
-    private String password;
 
-    public LoginRequest(String username,
-                        String password) {
-        this.username = username;
-        this.password = password;
-    }
+    @NotNull(message = "Username is required")
+    private String username;
+
+    @NotNull(message = "Password is required")
+    private String password;
 }

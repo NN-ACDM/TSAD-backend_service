@@ -1,59 +1,40 @@
 package com.tsad.web.backend.auth;
 
 import com.tsad.web.backend.auth.model.LoginRequest;
-import com.tsad.web.backend.auth.model.LoginResponse;
-import com.tsad.web.backend.repository.webservicedb.jpa.UserAuthJpaRepository;
-import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Date;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/tsad/auth")
 public class AuthController {
-
-    @Autowired
-    private UserAuthJpaRepository userAuthJpaRepository;
 
     @Autowired
     private CredentialService credentialService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        UserAuthJpaEntity user = userAuthJpaRepository.findByUsername(request.getUsername());
-        if (user != null && user.getPassword().equals(request.getPassword())) {
-            //  Generate token
-            String token = credentialService.generateToken();
+        String token = credentialService.login(request);
 
-            user.setToken(token);
-            user.setUpdatedDatetime(new Date());
-            userAuthJpaRepository.save(user);
-
-            return ResponseEntity.ok(new LoginResponse(token));
-        } else {
+        if (ObjectUtils.isEmpty(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        } else {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token);
+            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(null);
         }
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
-        String token = credentialService.extractToken(authorizationHeader);
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-        }
-        UserAuthJpaEntity user = userAuthJpaRepository.findByToken(token);
-        if (user != null) {
-
-            user.setToken(null);
-            user.setUpdatedDatetime(new Date());
-            userAuthJpaRepository.save(user);
-
-            return ResponseEntity.ok(HttpStatus.OK);
+        if (credentialService.logout(authorizationHeader)) {
+            return ResponseEntity.status(HttpStatus.OK).body("Logout");
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }

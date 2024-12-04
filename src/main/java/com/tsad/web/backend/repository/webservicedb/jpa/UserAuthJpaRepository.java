@@ -5,9 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigInteger;
+import java.util.Optional;
 
 @Repository
 public interface UserAuthJpaRepository extends JpaRepository<UserAuthJpaEntity, BigInteger> {
-    UserAuthJpaEntity findByToken(String token);
-    UserAuthJpaEntity findByUsername(String username);
+    Optional<UserAuthJpaEntity> findByToken(String token);
+
+    Optional<UserAuthJpaEntity> findByUsername(String username);
+
+    Optional<UserAuthJpaEntity> findByUsernameAndPassword(String username, String password);
 }
