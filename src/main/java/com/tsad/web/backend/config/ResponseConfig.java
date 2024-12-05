@@ -1,6 +1,6 @@
-package com.tsad.web.backend.auth.config;
+package com.tsad.web.backend.config;
 
-import com.tsad.web.backend.auth.CustomHeaderInterceptor;
+import com.tsad.web.backend.config.handler.HeaderInterceptorHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -10,10 +10,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class ResponseConfig implements WebMvcConfigurer {
 
     @Autowired
-    private CustomHeaderInterceptor customHeaderInterceptor;
+    private HeaderInterceptorHandler headerInterceptorHandler;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(customHeaderInterceptor);
+        registry.addInterceptor(headerInterceptorHandler);
     }
 }

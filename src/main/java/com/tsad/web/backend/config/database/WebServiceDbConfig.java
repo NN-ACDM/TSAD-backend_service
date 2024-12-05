@@ -1,4 +1,4 @@
-package com.tsad.web.backend.database;
+package com.tsad.web.backend.config.database;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;

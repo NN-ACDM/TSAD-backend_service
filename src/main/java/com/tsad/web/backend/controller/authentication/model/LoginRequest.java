@@ -1,4 +1,4 @@
-package com.tsad.web.backend.auth.model;
+package com.tsad.web.backend.controller.authentication.model;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

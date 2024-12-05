@@ -1,12 +1,12 @@
 package com.tsad.web.backend.service.user_management;
 
-import com.tsad.web.backend.auth.CredentialService;
 import com.tsad.web.backend.common.UserLevel;
 import com.tsad.web.backend.controller.user_management.model.UserProfileRq;
 import com.tsad.web.backend.repository.webservicedb.jpa.UserAuthJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.UserProfileJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserProfileJpaEntity;
+import com.tsad.web.backend.service.authentication.CredentialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
