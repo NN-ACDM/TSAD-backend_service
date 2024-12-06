@@ -7,7 +7,8 @@ import com.tsad.web.backend.repository.webservicedb.jpa.UserProfileJpaRepository
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserProfileJpaEntity;
 import com.tsad.web.backend.service.authentication.CredentialService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -17,19 +18,23 @@ import java.util.Date;
 
 @Service
 public class UserManagementService {
+    private static final Logger log = LoggerFactory.getLogger(UserManagementService.class);
 
-    @Autowired
-    private UserProfileJpaRepository userProfileJpaRepository;
+    private final UserProfileJpaRepository userProfileJpaRepository;
+    private final UserAuthJpaRepository userAuthJpaRepository;
+    private final CredentialService credentialService;
 
-    @Autowired
-    private UserAuthJpaRepository userAuthJpaRepository;
-
-    @Autowired
-    private CredentialService credentialService;
-
+    public UserManagementService(UserProfileJpaRepository userProfileJpaRepository,
+                                 UserAuthJpaRepository userAuthJpaRepository,
+                                 CredentialService credentialService) {
+        this.userProfileJpaRepository = userProfileJpaRepository;
+        this.userAuthJpaRepository = userAuthJpaRepository;
+        this.credentialService = credentialService;
+    }
 
     @Transactional
-    public void addUser(BigInteger makerId, UserProfileRq rq) {
+    public void addUser(BigInteger makerId,
+                        UserProfileRq rq) {
         Date currentDate = new Date();
 
         UserProfileJpaEntity profile = new UserProfileJpaEntity();

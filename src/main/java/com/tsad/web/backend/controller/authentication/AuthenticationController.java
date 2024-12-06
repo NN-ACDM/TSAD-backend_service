@@ -6,7 +6,6 @@ import com.tsad.web.backend.controller.authentication.model.LoginRequest;
 import com.tsad.web.backend.service.authentication.CredentialService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
     private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
-    @Autowired
-    private CredentialService credentialService;
+    private final CredentialService credentialService;
+
+    public AuthenticationController(CredentialService credentialService) {
+        this.credentialService = credentialService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) throws BusinessException {

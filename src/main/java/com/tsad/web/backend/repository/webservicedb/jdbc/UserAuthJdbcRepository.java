@@ -1,7 +1,8 @@
 package com.tsad.web.backend.repository.webservicedb.jdbc;
 
 import com.tsad.web.backend.repository.webservicedb.jdbc.model.UserAuthJdbcEntity;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -12,10 +13,14 @@ import java.util.List;
 
 @Repository
 public class UserAuthJdbcRepository {
+    private static final Logger log = LoggerFactory.getLogger(UserAuthJdbcRepository.class);
 
-    @Autowired
     @Qualifier(value = "webServiceDbJdbcTemplate")
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    public UserAuthJdbcRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
 
     public List<UserAuthJdbcEntity> getEntitiesByUsernameAndPassword(String username, String password) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
@@ -23,11 +28,11 @@ public class UserAuthJdbcRepository {
         mapSqlParameterSource.addValue("password", password);
 
         String sql = " SELECT ua.username as username, " +
-                        " ua.password as password, " +
-                        " ua.token as token " +
-                        " FROM user_auth ua " +
-                        " WHERE ua.username = :username " +
-                        " AND ua.password = :password ";
+                " ua.password as password, " +
+                " ua.token as token " +
+                " FROM user_auth ua " +
+                " WHERE ua.username = :username " +
+                " AND ua.password = :password ";
 
         return namedParameterJdbcTemplate.query(sql, mapSqlParameterSource, new BeanPropertyRowMapper<>(UserAuthJdbcEntity.class));
     }

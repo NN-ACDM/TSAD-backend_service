@@ -1,3 +1,11 @@
+spring:
+  application:
+    name: TSAD-Backend
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
 server:
   port: 8080
 
@@ -25,14 +33,6 @@ webservicedb:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
-spring:
-  application:
-    name: TSAD-Backend
-  servlet:
-    multipart:
-      max-file-size: 100MB
-      max-request-size: 100MB
 
 logging:
   level:

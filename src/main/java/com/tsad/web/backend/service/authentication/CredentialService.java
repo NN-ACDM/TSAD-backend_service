@@ -7,7 +7,6 @@ import com.tsad.web.backend.repository.webservicedb.jpa.UserAuthJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -22,8 +21,11 @@ import java.util.UUID;
 public class CredentialService {
     private static final Logger log = LoggerFactory.getLogger(CredentialService.class);
 
-    @Autowired
-    private UserAuthJpaRepository userAuthJpaRepository;
+    private final UserAuthJpaRepository userAuthJpaRepository;
+
+    public CredentialService(UserAuthJpaRepository userAuthJpaRepository) {
+        this.userAuthJpaRepository = userAuthJpaRepository;
+    }
 
     private String generateToken() {
         String token = UUID.randomUUID().toString();
