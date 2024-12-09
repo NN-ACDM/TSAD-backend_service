@@ -27,7 +27,7 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) throws BusinessException {
-        log.info("login() ... {}", request);
+        log.info("login() ... username: {} is trying to login", request.getUsername());
         String token = credentialService.login(request);
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
@@ -37,7 +37,7 @@ public class AuthenticationController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader(RequestHeaderName.USERNAME) String username,
                                     @RequestHeader(HttpHeaders.AUTHORIZATION) String headerToken) throws BusinessException {
-        log.info("logout() ... {} is requesting logout", username);
+        log.info("logout() ... username: {} is requesting logout", username);
         credentialService.logout(username, headerToken);
         return ResponseEntity.status(HttpStatus.OK).body("Logout");
     }

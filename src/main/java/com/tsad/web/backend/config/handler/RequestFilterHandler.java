@@ -4,10 +4,13 @@ import com.tsad.web.backend.common.RequestHeaderName;
 import com.tsad.web.backend.config.BusinessException;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
 import com.tsad.web.backend.service.authentication.CredentialService;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -38,9 +41,9 @@ public class RequestFilterHandler extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NotNull HttpServletRequest request,
+                                    @Nullable HttpServletResponse response,
+                                    @Nullable FilterChain filterChain) throws ServletException, IOException {
         try {
             UserAuthJpaEntity user = credentialService.validateUsernameAndToken(
                     request.getHeader(RequestHeaderName.USERNAME),
@@ -52,15 +55,31 @@ public class RequestFilterHandler extends OncePerRequestFilter {
                                 user.getUsername(),
                                 user.getToken(),
                                 roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role)).toList());
-
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.debug("doFilterInternal() ... SecurityContext: {}", SecurityContextHolder.getContext().getAuthentication());
             }
-        } catch (BusinessException e) {
-            log.debug("doFilterInternal() ... validate credential failed");
+        } catch (BusinessException ex) {
+            if (!ObjectUtils.isEmpty(response)) {
+                this.setErrorResponse(response, ex);
+            }
             return;
         }
 
-        filterChain.doFilter(request, response);
+        if (filterChain != null) {
+            filterChain.doFilter(request, response);
+        } else {
+            log.error("doFilterInternal() ... filterChain is Null");
+        }
+    }
+
+    private void setErrorResponse(HttpServletResponse response, BusinessException ex) throws IOException {
+        response.setHeader("Accept", "application/json");
+        response.setHeader("Content-type", "application/json");
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("message", ex.getMessage());
+        jsonObject.put("code", ex.getErrorCode());
+        response.getWriter().write(jsonObject.toString());
+        response.getWriter().flush();
     }
 }

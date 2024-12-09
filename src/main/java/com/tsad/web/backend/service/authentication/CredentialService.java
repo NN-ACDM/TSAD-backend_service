@@ -47,11 +47,11 @@ public class CredentialService {
 
     private UserAuthJpaEntity validateUsernameAndPassword(String username, String password) throws BusinessException {
         if (ObjectUtils.isEmpty(username)) {
-            log.error("validateUsernameAndPassword() ... {}", ErrorCode.CR0002);
+            log.warn("validateUsernameAndPassword() ... {}", ErrorCode.CR0002);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0002);
         }
         if (ObjectUtils.isEmpty(password)) {
-            log.error("validateUsernameAndPassword() ... {}", ErrorCode.CR0003);
+            log.warn("validateUsernameAndPassword() ... {}", ErrorCode.CR0003);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0003);
         }
 
@@ -59,7 +59,7 @@ public class CredentialService {
         if (userOpt.isPresent()) {
             return userOpt.get();
         } else {
-            log.error("validateUsernameAndPassword() ... {}", ErrorCode.CR0005);
+            log.warn("validateUsernameAndPassword() ... {}", ErrorCode.CR0005);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0005);
         }
     }
@@ -67,11 +67,11 @@ public class CredentialService {
     public UserAuthJpaEntity validateUsernameAndToken(String headerUsername, String headerToken) throws BusinessException {
         String token = this.extractToken(headerToken);
         if (ObjectUtils.isEmpty(headerUsername)) {
-            log.error("validateUsernameAndToken() ... {}", ErrorCode.CR0002);
+            log.warn("validateUsernameAndToken() ... {}", ErrorCode.CR0002);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0002);
         }
         if (ObjectUtils.isEmpty(token)) {
-            log.error("validateUsernameAndToken() ... {}", ErrorCode.CR0001);
+            log.warn("validateUsernameAndToken() ... {}", ErrorCode.CR0001);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0001);
         }
 
@@ -81,7 +81,7 @@ public class CredentialService {
             log.debug("validateUsernameAndToken() ... authenticate passed -> user: {}", user.getUsername());
             return user;
         } else {
-            log.error("validateUsernameAndToken() ... {}", ErrorCode.CR0004);
+            log.warn("validateUsernameAndToken() ... {}", ErrorCode.CR0004);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0004);
         }
     }
@@ -91,7 +91,7 @@ public class CredentialService {
             UserAuthJpaEntity user = this.validateUsernameAndPassword(rq.getUsername(), rq.getPassword());
             user.setToken(this.generateToken());
             userAuthJpaRepository.save(user);
-            log.info("login() ... login complete");
+            log.info("login() ... username: {} is successfully login", rq.getUsername());
             return user.getToken();
         } catch (Exception ex) {
             log.error("login() ... {}", ErrorCode.DB0001);
@@ -104,7 +104,7 @@ public class CredentialService {
             UserAuthJpaEntity user = this.validateUsernameAndToken(username, headerToken);
             user.setToken(null);
             userAuthJpaRepository.save(user);
-            log.info("logout() ... logout complete");
+            log.info("logout() ... username: {} is successfully logout", username);
         } catch (Exception ex) {
             log.error("logout() ... {}", ErrorCode.DB0002);
             throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.DB0002);

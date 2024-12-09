@@ -21,7 +21,6 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        entityManagerFactoryRef = "entityManagerFactory",
         basePackages = {"com.tsad.web.backend.repository.webservicedb"}
 )
 @EntityScan(basePackages = "com.tsad.web.backend.repository.webservicedb.jpa")
