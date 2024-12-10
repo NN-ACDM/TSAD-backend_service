@@ -6,15 +6,12 @@ import java.math.BigInteger;
 import java.util.Date;
 
 @Data
-public class UserProfileJdbcEntity {
-    private BigInteger id;
+public class UserProfileSearchJdbcEntity {
+    private BigInteger userProfileId;
     private String firstName;
     private String lastName;
     private String email;
     private String mobile;
-    private String professionalLicense;
-    private BigInteger createBy;
-    private Date createdDatetime;
-    private BigInteger updateBy;
-    private Date updatedDatetime;
+    private String createBy;
+    private Date updateDatetime;
 }

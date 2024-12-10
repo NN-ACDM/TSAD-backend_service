@@ -3,18 +3,8 @@ package com.tsad.web.backend.repository.webservicedb.jdbc.model;
 import lombok.Data;
 
 import java.math.BigInteger;
-import java.util.Date;
 
 @Data
 public class UserAuthJdbcEntity {
     private BigInteger id;
-    private BigInteger userProfileId;
-    private String username;
-    private String password;
-    private String token;
-    private String level;
-    private BigInteger createBy;
-    private Date createdDatetime;
-    private BigInteger updateBy;
-    private Date updatedDatetime;
 }

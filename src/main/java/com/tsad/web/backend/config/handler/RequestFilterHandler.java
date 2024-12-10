@@ -52,9 +52,10 @@ public class RequestFilterHandler extends OncePerRequestFilter {
                 List<String> roles = Collections.singletonList(user.getLevel());
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                user.getUsername(),
+                                user.getId(),
                                 user.getToken(),
                                 roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role)).toList());
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.debug("doFilterInternal() ... SecurityContext: {}", SecurityContextHolder.getContext().getAuthentication());
             }

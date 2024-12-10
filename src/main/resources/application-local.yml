@@ -33,9 +33,3 @@ webservicedb:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
-logging:
-  level:
-    org:
-      springframework:
-        security=DEBUG:

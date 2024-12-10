@@ -1,7 +1,12 @@
 package com.tsad.web.backend.service.user_management;
 
+import com.tsad.web.backend.common.DateFormat;
 import com.tsad.web.backend.common.UserLevel;
-import com.tsad.web.backend.controller.user_management.model.UserProfileRq;
+import com.tsad.web.backend.controller.user_management.model.AddUserProfileRq;
+import com.tsad.web.backend.controller.user_management.model.UserSearchRq;
+import com.tsad.web.backend.controller.user_management.model.UserSearchRs;
+import com.tsad.web.backend.repository.webservicedb.jdbc.UserJdbcRepository;
+import com.tsad.web.backend.repository.webservicedb.jdbc.model.UserProfileSearchJdbcEntity;
 import com.tsad.web.backend.repository.webservicedb.jpa.UserAuthJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.UserProfileJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
@@ -14,7 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class UserManagementService {
@@ -22,19 +31,60 @@ public class UserManagementService {
 
     private final UserProfileJpaRepository userProfileJpaRepository;
     private final UserAuthJpaRepository userAuthJpaRepository;
+    private final UserJdbcRepository userJdbcRepository;
     private final CredentialService credentialService;
 
     public UserManagementService(UserProfileJpaRepository userProfileJpaRepository,
                                  UserAuthJpaRepository userAuthJpaRepository,
+                                 UserJdbcRepository userJdbcRepository,
                                  CredentialService credentialService) {
         this.userProfileJpaRepository = userProfileJpaRepository;
         this.userAuthJpaRepository = userAuthJpaRepository;
+        this.userJdbcRepository = userJdbcRepository;
         this.credentialService = credentialService;
     }
 
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat(DateFormat.DATETIME.toString());
+
+    public List<UserSearchRs> searchUser(UserSearchRq rq) {
+        log.info("searchUser() ... start");
+        List<UserProfileSearchJdbcEntity> userSearchResults = userJdbcRepository.searchUserByCriteria(
+                rq.getFirstName(),
+                rq.getLastName(),
+                rq.getEmail(),
+                rq.getMobile(),
+                rq.getProfessionalLicense());
+        log.info("searchUser() ... userSearchResults.size() = {}", userSearchResults.size());
+
+        List<UserSearchRs> userSearchRsList = new ArrayList<>();
+        for (UserProfileSearchJdbcEntity user : userSearchResults) {
+            UserSearchRs rs = new UserSearchRs();
+
+            if (user.getUserProfileId() == null) {
+                log.warn("searchUser() ... found some user that's ID is undefined");
+                continue;
+            }
+
+            rs.setUserProfileId(user.getUserProfileId());
+            rs.setFirstName(user.getFirstName() == null ? "" : user.getFirstName());
+            rs.setLastName(user.getLastName() == null ? "" : user.getLastName());
+            rs.setEmail(user.getEmail() == null ? "" : user.getEmail());
+            rs.setMobile(user.getMobile() == null ? "" : user.getMobile());
+            rs.setCreateBy(user.getCreateBy() == null ? "" : user.getCreateBy());
+            rs.setUpdateDatetime(user.getUpdateDatetime() == null ? "" : dateFormat.format(user.getUpdateDatetime()));
+
+            userSearchRsList.add(rs);
+        }
+        log.info("searchUser() ... userSearchRsList.size() = {}", userSearchRsList.size());
+
+        userSearchResults.sort(Comparator.comparing(UserProfileSearchJdbcEntity::getFirstName));
+        log.info("searchUser() ... finish");
+        return userSearchRsList;
+    }
+
     @Transactional
-    public void addUser(BigInteger makerId,
-                        UserProfileRq rq) {
+    public void addUserByRegisterForm(BigInteger makerId,
+                                      AddUserProfileRq rq) {
         Date currentDate = new Date();
 
         UserProfileJpaEntity profile = new UserProfileJpaEntity();
@@ -59,19 +109,15 @@ public class UserManagementService {
         auth.setUpdateBy(makerId);
     }
 
-    private String getUsername(UserProfileRq rq, UserProfileJpaEntity savedProfile) {
+    private String getUsername(AddUserProfileRq rq, UserProfileJpaEntity savedProfile) {
         return ObjectUtils.isEmpty(rq.getUsername()) ? savedProfile.getProfessionalLicense() : rq.getUsername();
     }
 
-    private String getPassword(UserProfileRq rq, UserAuthJpaEntity auth) {
+    private String getPassword(AddUserProfileRq rq, UserAuthJpaEntity auth) {
         return ObjectUtils.isEmpty(rq.getPassword()) ? credentialService.generateDefaultPassword(auth.getUsername()) : rq.getPassword();
     }
 
-    private String getLevel(UserProfileRq rq) {
+    private String getLevel(AddUserProfileRq rq) {
         return ObjectUtils.isEmpty(rq.getLevel()) ? rq.getLevel() : UserLevel.MEMBER.toString();
-    }
-
-    public void addUserByRegisterForm() {
-
     }
 }

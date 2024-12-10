@@ -120,8 +120,8 @@ public class CredentialService {
             log.debug("rotateToken() ... rotate token complete");
             return user.getToken();
         } catch (Exception ex) {
-            log.error("rotateToken() ... {}", ErrorCode.DB0001);
-            throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.DB0001);
+            log.error("rotateToken() ... {}", ex.toString());
+            throw ex;
         }
     }
 
