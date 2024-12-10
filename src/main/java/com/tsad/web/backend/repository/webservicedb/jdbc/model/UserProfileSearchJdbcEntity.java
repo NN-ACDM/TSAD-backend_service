@@ -12,6 +12,7 @@ public class UserProfileSearchJdbcEntity {
     private String lastName;
     private String email;
     private String mobile;
+    private String professionalLicense;
     private String createBy;
     private Date updateDatetime;
 }

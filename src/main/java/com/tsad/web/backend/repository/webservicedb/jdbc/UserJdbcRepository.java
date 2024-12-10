@@ -35,6 +35,7 @@ public class UserJdbcRepository {
                  up.last_name AS lastName,
                  up.email AS email,
                  up.mobile AS mobile,
+                 up.professional_license AS professionalLicense,
                  creator.first_name AS createBy,
                  up.updated_datetime AS updateDatetime
                  FROM user_profile up
@@ -45,26 +46,26 @@ public class UserJdbcRepository {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
 
         if (StringUtils.isNotEmpty(firstName)) {
-            mapSqlParameterSource.addValue("firstName", firstName);
-            sql += " AND up.first_name like '%:firstName%'\n";
+            mapSqlParameterSource.addValue("firstName", "%" + firstName + "%");
+            sql += " AND up.first_name LIKE :firstName\n";
         }
 
-        if (StringUtils.isNotEmpty(firstName)) {
-            mapSqlParameterSource.addValue("lastName", lastName);
-            sql += " AND up.last_name like '%:lastName%'\n";
+        if (StringUtils.isNotEmpty(lastName)) {
+            mapSqlParameterSource.addValue("lastName", "%" + lastName + "%");
+            sql += " AND up.last_name LIKE :lastName\n";
         }
 
-        if (StringUtils.isNotEmpty(firstName)) {
+        if (StringUtils.isNotEmpty(email)) {
             mapSqlParameterSource.addValue("email", email);
             sql += " AND up.email = :email\n";
         }
 
-        if (StringUtils.isNotEmpty(firstName)) {
+        if (StringUtils.isNotEmpty(mobile)) {
             mapSqlParameterSource.addValue("mobile", mobile);
             sql += " AND up.mobile = :mobile\n";
         }
 
-        if (StringUtils.isNotEmpty(firstName)) {
+        if (StringUtils.isNotEmpty(professionalLicense)) {
             mapSqlParameterSource.addValue("professionalLicense", professionalLicense);
             sql += " AND up.professional_license = :professionalLicense\n";
         }

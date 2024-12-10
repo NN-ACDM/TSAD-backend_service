@@ -1,9 +1,9 @@
 package com.tsad.web.backend.common;
 
 public enum UserLevel {
-    MEMBER("member"),
-    ADMIN("admin"),
-    MASTER_ADMIN("master-admin");
+    MEMBER("MEMBER"),
+    ADMIN("ADMIN"),
+    MASTER("MASTER");
 
     private final String level;
 

@@ -9,6 +9,7 @@ public class AddUserProfileRs {
     private String email;
     private String mobile;
     private String professionalLicense;
+
     private String username;
     private String level;
 }

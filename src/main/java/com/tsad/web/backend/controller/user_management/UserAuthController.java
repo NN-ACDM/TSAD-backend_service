@@ -1,18 +1,18 @@
 package com.tsad.web.backend.controller.user_management;
 
 import com.tsad.web.backend.common.RequestHeaderName;
-import com.tsad.web.backend.controller.user_management.model.UserProfileRq;
+import com.tsad.web.backend.controller.user_management.model.AddUserProfileRq;
+import com.tsad.web.backend.controller.user_management.model.AddUserProfileRs;
 import com.tsad.web.backend.controller.user_management.model.UserSearchRq;
 import com.tsad.web.backend.controller.user_management.model.UserSearchRs;
 import com.tsad.web.backend.service.user_management.UserManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -27,24 +27,24 @@ public class UserAuthController {
     }
 
     @PostMapping("/user-list")
-    public List<UserSearchRs> getUserList(@RequestHeader(RequestHeaderName.USERNAME) String username,
-                                          @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
-                                          @RequestBody UserSearchRq rq) {
-
-        Object userIdOp = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userIdOp.toString();
+    public List<UserSearchRs> searchUser(@RequestHeader(RequestHeaderName.USERNAME) String username,
+                                         @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
+                                         @RequestBody UserSearchRq rq) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
         log.info("searchUser() ... url: /user-list -> ID: {}, request: {}", userId, rq);
-        List<UserSearchRs> rsList = userManagementService.searchUser(rq);
+        List<UserSearchRs> rs = userManagementService.searchUser(rq);
         log.info("searchUser() ... url: /user-list -> done");
-        return rsList;
+        return rs;
     }
 
     @PutMapping("/add-user")
-    public ResponseEntity<?> addUser(@RequestHeader(RequestHeaderName.USERNAME) String username,
-                                     @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
-                                     @RequestBody UserProfileRq rq) {
-
-//        userManagementService.addUser(user.getId(), rq);
-        return ResponseEntity.status(HttpStatus.OK).body("User added");
+    public AddUserProfileRs addUser(@RequestHeader(RequestHeaderName.USERNAME) String username,
+                                    @RequestHeader(HttpHeaders.AUTHORIZATION) String authToken,
+                                    @RequestBody AddUserProfileRq rq) {
+        BigInteger userId = new BigInteger(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
+        log.info("addUser() ... url: /add-user -> ID: {}, request: {}", userId, rq);
+        AddUserProfileRs rs = userManagementService.addUserByRegisterForm(userId, rq);
+        log.info("addUser() ... url: /add-user -> done");
+        return rs;
     }
 }

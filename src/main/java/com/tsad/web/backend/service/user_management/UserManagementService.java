@@ -3,6 +3,7 @@ package com.tsad.web.backend.service.user_management;
 import com.tsad.web.backend.common.DateFormat;
 import com.tsad.web.backend.common.UserLevel;
 import com.tsad.web.backend.controller.user_management.model.AddUserProfileRq;
+import com.tsad.web.backend.controller.user_management.model.AddUserProfileRs;
 import com.tsad.web.backend.controller.user_management.model.UserSearchRq;
 import com.tsad.web.backend.controller.user_management.model.UserSearchRs;
 import com.tsad.web.backend.repository.webservicedb.jdbc.UserJdbcRepository;
@@ -70,6 +71,7 @@ public class UserManagementService {
             rs.setLastName(user.getLastName() == null ? "" : user.getLastName());
             rs.setEmail(user.getEmail() == null ? "" : user.getEmail());
             rs.setMobile(user.getMobile() == null ? "" : user.getMobile());
+            rs.setProfessionalLicense(user.getProfessionalLicense() == null ? "" : user.getProfessionalLicense());
             rs.setCreateBy(user.getCreateBy() == null ? "" : user.getCreateBy());
             rs.setUpdateDatetime(user.getUpdateDatetime() == null ? "" : dateFormat.format(user.getUpdateDatetime()));
 
@@ -83,8 +85,8 @@ public class UserManagementService {
     }
 
     @Transactional
-    public void addUserByRegisterForm(BigInteger makerId,
-                                      AddUserProfileRq rq) {
+    public AddUserProfileRs addUserByRegisterForm(BigInteger makerId,
+                                                  AddUserProfileRq rq) {
         Date currentDate = new Date();
 
         UserProfileJpaEntity profile = new UserProfileJpaEntity();
@@ -107,6 +109,18 @@ public class UserManagementService {
         auth.setCreateBy(makerId);
         auth.setCreatedDatetime(currentDate);
         auth.setUpdateBy(makerId);
+        UserAuthJpaEntity saveAuth = userAuthJpaRepository.save(auth);
+
+        AddUserProfileRs rs = new AddUserProfileRs();
+        rs.setFirstName(profile.getFirstName());
+        rs.setLastName(profile.getLastName());
+        rs.setEmail(profile.getEmail());
+        rs.setMobile(profile.getMobile());
+        rs.setProfessionalLicense(profile.getProfessionalLicense());
+        rs.setUsername(saveAuth.getUsername());
+        rs.setLevel(saveAuth.getLevel());
+
+        return rs;
     }
 
     private String getUsername(AddUserProfileRq rq, UserProfileJpaEntity savedProfile) {
@@ -118,6 +132,6 @@ public class UserManagementService {
     }
 
     private String getLevel(AddUserProfileRq rq) {
-        return ObjectUtils.isEmpty(rq.getLevel()) ? rq.getLevel() : UserLevel.MEMBER.toString();
+        return ObjectUtils.isEmpty(rq.getLevel()) ? UserLevel.MEMBER.toString() : rq.getLevel();
     }
 }

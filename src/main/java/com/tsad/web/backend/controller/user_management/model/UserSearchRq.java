@@ -9,4 +9,5 @@ public class UserSearchRq {
     private String email;
     private String mobile;
     private String professionalLicense;
+    private String level;
 }
