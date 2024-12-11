@@ -31,6 +31,9 @@ public class UserAuthJpaEntity {
     @Column(name = "level")
     private String level;
 
+    @Column(name = "is_active")
+    private boolean isActive;
+
     @Column(name = "create_by")
     private BigInteger createBy;
 
@@ -42,4 +45,15 @@ public class UserAuthJpaEntity {
 
     @Column(name = "updated_datetime")
     private Date updatedDatetime;
+
+    @Column(name = "last_login_datetime")
+    private Date lastLoginDatetime;
+
+//    public void setPassword() {
+//
+//    }
+//
+//    public String getPassword() {
+//
+//    }
 }

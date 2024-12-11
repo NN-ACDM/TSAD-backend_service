@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @Data
-public class AddUserProfileRq {
+public class EditUserRs {
     @NotEmpty(message = "the first name is required")
     private String firstName;
 

@@ -57,6 +57,10 @@ public class CredentialService {
 
         Optional<UserAuthJpaEntity> userOpt = userAuthJpaRepository.findByUsernameAndPassword(username, password);
         if (userOpt.isPresent()) {
+            if (!userOpt.get().isActive()) {
+                log.warn("validateUsernameAndPassword() ... {}", ErrorCode.CR0007);
+                throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0007);
+            }
             return userOpt.get();
         } else {
             log.warn("validateUsernameAndPassword() ... {}", ErrorCode.CR0005);
@@ -86,29 +90,20 @@ public class CredentialService {
         }
     }
 
-    public String login(LoginRequest rq) throws BusinessException {
-        try {
-            UserAuthJpaEntity user = this.validateUsernameAndPassword(rq.getUsername(), rq.getPassword());
-            user.setToken(this.generateToken());
-            userAuthJpaRepository.save(user);
-            log.info("login() ... username: {} is successfully login", rq.getUsername());
-            return user.getToken();
-        } catch (Exception ex) {
-            log.error("login() ... {}", ErrorCode.DB0001);
-            throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.DB0001);
-        }
+    public String login(LoginRequest rq) {
+        UserAuthJpaEntity user = this.validateUsernameAndPassword(rq.getUsername(), rq.getPassword());
+        user.setToken(this.generateToken());
+        user.setLastLoginDatetime(new Date());
+        userAuthJpaRepository.save(user);
+        log.info("login() ... username: {} is successfully login", rq.getUsername());
+        return user.getToken();
     }
 
-    public void logout(String username, String headerToken) throws BusinessException {
-        try {
-            UserAuthJpaEntity user = this.validateUsernameAndToken(username, headerToken);
-            user.setToken(null);
-            userAuthJpaRepository.save(user);
-            log.info("logout() ... username: {} is successfully logout", username);
-        } catch (Exception ex) {
-            log.error("logout() ... {}", ErrorCode.DB0002);
-            throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.DB0002);
-        }
+    public void logout(String username, String headerToken) {
+        UserAuthJpaEntity user = this.validateUsernameAndToken(username, headerToken);
+        user.setToken(null);
+        userAuthJpaRepository.save(user);
+        log.info("logout() ... username: {} is successfully logout", username);
     }
 
     public String rotateToken(String username, String headerToken) throws BusinessException {
@@ -120,7 +115,7 @@ public class CredentialService {
             log.debug("rotateToken() ... rotate token complete");
             return user.getToken();
         } catch (Exception ex) {
-            log.error("rotateToken() ... {}", ex.toString());
+            log.error("rotateToken() ... {} / message: {}", ErrorCode.DB0001, ex.toString());
             throw ex;
         }
     }
