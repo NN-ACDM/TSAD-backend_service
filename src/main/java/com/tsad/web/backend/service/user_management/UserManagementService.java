@@ -189,7 +189,8 @@ public class UserManagementService {
                 rq.getLastName(),
                 rq.getEmail(),
                 rq.getMobile(),
-                rq.getProfessionalLicense());
+                rq.getProfessionalLicense(),
+                rq.getLevel());
         log.info("searchUser() ... userSearchResults.size() = {}", userSearchResults.size());
 
         List<SearchUserRs> searchUserRsList = new ArrayList<>();
@@ -207,6 +208,7 @@ public class UserManagementService {
             rs.setEmail(user.getEmail() == null ? "" : user.getEmail());
             rs.setMobile(user.getMobile() == null ? "" : user.getMobile());
             rs.setProfessionalLicense(user.getProfessionalLicense() == null ? "" : user.getProfessionalLicense());
+            rs.setLevel(user.getLevel() == null ? "" : user.getLevel());
             rs.setCreateBy(user.getCreateBy() == null ? "" : user.getCreateBy());
             rs.setUpdateDatetime(user.getUpdateDatetime() == null ? "" : dateFormat.format(user.getUpdateDatetime()));
 
@@ -234,6 +236,22 @@ public class UserManagementService {
         if (ObjectUtils.isEmpty(rq.getUsername()) && ObjectUtils.isEmpty(rq.getProfessionalLicense())) {
             log.error("addUser() ... {}", ErrorCode.UM0011);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0011);
+        }
+
+        Optional<UserAuthJpaEntity> userAuthOpt = userAuthJpaRepository.findByUsername(rq.getUsername());
+        if (userAuthOpt.isPresent()) {
+            log.warn("addUser() ... {}", ErrorCode.UM0014);
+            throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0014);
+        }
+        Optional<UserProfileJpaEntity> usernameProfileOpt = userProfileJpaRepository.findByProfessionalLicense(rq.getUsername());
+        if (usernameProfileOpt.isPresent()) {
+            log.warn("addUser() ... {}", ErrorCode.UM0016);
+            throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0016);
+        }
+        Optional<UserProfileJpaEntity> profProfileOpt = userProfileJpaRepository.findByProfessionalLicense(rq.getProfessionalLicense());
+        if (profProfileOpt.isPresent()) {
+            log.error("addUser() ... {}", ErrorCode.UM0015);
+            throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0015);
         }
 
         Date currentDate = new Date();

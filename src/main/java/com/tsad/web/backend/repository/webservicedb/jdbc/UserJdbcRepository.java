@@ -27,7 +27,8 @@ public class UserJdbcRepository {
                                                                   String lastName,
                                                                   String email,
                                                                   String mobile,
-                                                                  String professionalLicense) {
+                                                                  String professionalLicense,
+                                                                  String level) {
 
         String sql = """
                  SELECT up.id AS userProfileId,
@@ -36,9 +37,11 @@ public class UserJdbcRepository {
                  up.email AS email,
                  up.mobile AS mobile,
                  up.professional_license AS professionalLicense,
+                 ua.level AS level,
                  creator.first_name AS createBy,
                  up.updated_datetime AS updateDatetime
                  FROM user_profile up
+                 INNER JOIN user_auth ua ON ua.user_profile_id = up.id
                  LEFT JOIN user_profile creator ON creator.id = up.create_by
                  WHERE 1 = 1\
                 """;
@@ -68,6 +71,11 @@ public class UserJdbcRepository {
         if (StringUtils.isNotEmpty(professionalLicense)) {
             mapSqlParameterSource.addValue("professionalLicense", professionalLicense);
             sql += " AND up.professional_license = :professionalLicense\n";
+        }
+
+        if (StringUtils.isNotEmpty(level)) {
+            mapSqlParameterSource.addValue("level", level);
+            sql += " AND ua.level = :level\n";
         }
         log.debug("searchUserByCriteria() ... SQL Statement: ");
         return namedParameterJdbcTemplate.query(sql, mapSqlParameterSource, new BeanPropertyRowMapper<>(UserProfileSearchJdbcEntity.class));
