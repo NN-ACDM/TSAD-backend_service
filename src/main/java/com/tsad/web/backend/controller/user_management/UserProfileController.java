@@ -16,18 +16,17 @@ import static com.tsad.web.backend.common.ErrorCode.CR0006;
 
 @RestController
 @RequestMapping("/admin/user")
-public class UserAuthController {
-    private static final Logger log = LoggerFactory.getLogger(UserAuthController.class);
+public class UserProfileController {
+    private static final Logger log = LoggerFactory.getLogger(UserProfileController.class);
     private static final String SEARCH_USER_URL = "/search";
-    private static final String VALIDATE_USERNAME_URL = "/validate-username";
     private static final String VALIDATE_PROFESSIONAL_LICENSE_URL = "/validate-professional-license";
     private static final String ADD_USER_URL = "/add";
-    private static final String EDIT_USER_URL = "/edit";
+    private static final String EDIT_USER_PROFILE_URL = "/edit-profile";
     private static final String DELETE_USER_URL = "/delete";
 
     private final UserManagementService userManagementService;
 
-    public UserAuthController(UserManagementService userManagementService) {
+    public UserProfileController(UserManagementService userManagementService) {
         this.userManagementService = userManagementService;
     }
 
@@ -49,15 +48,6 @@ public class UserAuthController {
         return rs;
     }
 
-    @PostMapping(VALIDATE_USERNAME_URL)
-    public ValidateUsernameRs validateUsername(@RequestBody ValidateUsernameRq rq) {
-        BigInteger userId = this.getUserIDFromSecurityContextHolder();
-        log.info("validateUsername() ... url: {} -> ID: {}, request: {}", VALIDATE_USERNAME_URL, userId, rq);
-        ValidateUsernameRs rs = userManagementService.validateUsername(rq.getUsername());
-        log.info("validateUsername() ... url: {} -> done", VALIDATE_USERNAME_URL);
-        return rs;
-    }
-
     @PostMapping(VALIDATE_PROFESSIONAL_LICENSE_URL)
     public ValidateProfessionalLcRs validateProfessionalLicense(@RequestBody ValidateProfessionalLcRq rq) {
         BigInteger userId = this.getUserIDFromSecurityContextHolder();
@@ -76,12 +66,12 @@ public class UserAuthController {
         return rs;
     }
 
-    @PatchMapping(EDIT_USER_URL)
-    public EditUserRs editUserByForm(@RequestBody EditUserRq rq) {
+    @PatchMapping(EDIT_USER_PROFILE_URL)
+    public EditUserProfileRs editUserProfile(@RequestBody EditUserProfileRq rq) {
         BigInteger userId = this.getUserIDFromSecurityContextHolder();
-        log.info("editUserByForm() ... url: {} -> ID: {}, request: {}", EDIT_USER_URL, userId, rq);
-        EditUserRs rs = userManagementService.editUserByForm(userId, rq);
-        log.info("editUserByForm() ... url: {} -> done", EDIT_USER_URL);
+        log.info("editUserProfile() ... url: {} -> ID: {}, request: {}", EDIT_USER_PROFILE_URL, userId, rq);
+        EditUserProfileRs rs = userManagementService.editUserProfile(userId, rq);
+        log.info("editUserProfile() ... url: {} -> done", EDIT_USER_PROFILE_URL);
         return rs;
     }
 

@@ -3,9 +3,14 @@ package com.tsad.web.backend.service.authentication;
 import com.tsad.web.backend.common.CryptoUtils;
 import com.tsad.web.backend.common.ErrorCode;
 import com.tsad.web.backend.config.BusinessException;
+import com.tsad.web.backend.controller.authentication.model.EditCredentialRq;
+import com.tsad.web.backend.controller.authentication.model.EditCredentialRs;
 import com.tsad.web.backend.controller.authentication.model.LoginRequest;
+import com.tsad.web.backend.controller.authentication.model.ValidateUsernameRs;
 import com.tsad.web.backend.repository.webservicedb.jpa.UserAuthJpaRepository;
+import com.tsad.web.backend.repository.webservicedb.jpa.UserProfileJpaRepository;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
+import com.tsad.web.backend.repository.webservicedb.jpa.model.UserProfileJpaEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,11 +27,17 @@ import java.util.UUID;
 public class CredentialService {
     private static final Logger log = LoggerFactory.getLogger(CredentialService.class);
 
+    private final UserProfileJpaRepository userProfileJpaRepository;
     private final UserAuthJpaRepository userAuthJpaRepository;
     private final CryptoUtils cryptoUtils;
 
-    public CredentialService(UserAuthJpaRepository userAuthJpaRepository,
+    private final int USERNAME_MAX_LENGTH = 24;
+    private final int PASSWORD_MAX_LENGTH = 64;
+
+    public CredentialService(UserProfileJpaRepository userProfileJpaRepository,
+                             UserAuthJpaRepository userAuthJpaRepository,
                              CryptoUtils cryptoUtils) {
+        this.userProfileJpaRepository = userProfileJpaRepository;
         this.userAuthJpaRepository = userAuthJpaRepository;
         this.cryptoUtils = cryptoUtils;
     }
@@ -93,6 +104,65 @@ public class CredentialService {
         }
     }
 
+    private void validateUsernameFormat(String newUsername) {
+        if (!ObjectUtils.isEmpty(newUsername)) {
+            if (newUsername.length() > USERNAME_MAX_LENGTH ||
+                    !newUsername.matches("^[a-z0-9_]+$")) {
+                log.error("validateUsernameFormat() ... {}", ErrorCode.UM0003);
+                throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0003);
+            }
+        }
+    }
+
+    private void validatePasswordFormat(String newPassword) {
+        if (!ObjectUtils.isEmpty(newPassword)) {
+            if (newPassword.length() > PASSWORD_MAX_LENGTH) {
+                log.error("validatePasswordFormat() ... {}", ErrorCode.UM0004);
+                throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0004);
+            }
+        }
+    }
+
+//    private void validateLevelFormat(String newLevel) {
+//        if (!ObjectUtils.isEmpty(newLevel)) {
+//            if (!(UserLevel.MEMBER.toString().equals(newLevel) ||
+//                    UserLevel.ADMIN.toString().equals(newLevel) ||
+//                    UserLevel.MASTER.toString().equals(newLevel))) {
+//                log.error("validateLevelFormat() ... {}", ErrorCode.UM0010);
+//                throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0010);
+//            }
+//        }
+//    }
+
+    public ValidateUsernameRs checkAvailableUsername(String newUsername) {
+        ValidateUsernameRs rs = new ValidateUsernameRs();
+        Optional<UserAuthJpaEntity> userAuthOpt = userAuthJpaRepository.findByUsername(newUsername);
+        if (userAuthOpt.isPresent()) {
+            log.warn("validateUsername() ... {}", ErrorCode.UM0014);
+            rs.setAvailable(false);
+            rs.setMessage(ErrorCode.UM0014.toString());
+            return rs;
+        }
+        Optional<UserProfileJpaEntity> userProfileOpt = userProfileJpaRepository.findByProfessionalLicense(newUsername);
+        if (userProfileOpt.isPresent()) {
+            log.warn("validateUsername() ... {}", ErrorCode.UM0016);
+            rs.setAvailable(false);
+            rs.setMessage(ErrorCode.UM0016.toString());
+            return rs;
+        }
+        try {
+            this.validateUsernameFormat(newUsername);
+        } catch (BusinessException ex) {
+            log.warn("validateUsername() ... {}", ex.getMessage());
+            rs.setAvailable(false);
+            rs.setMessage(ex.getMessage());
+            return rs;
+        }
+        rs.setAvailable(true);
+        rs.setMessage("username is available");
+        return rs;
+    }
+
     public String login(LoginRequest rq) {
         UserAuthJpaEntity user = this.validateUsernameAndPassword(rq.getUsername(), rq.getPassword());
         user.setToken(this.generateToken());
@@ -131,5 +201,43 @@ public class CredentialService {
 
     public String encryptPassword(String input) {
         return cryptoUtils.bCryptPasswordEncoder(input);
+    }
+
+    public EditCredentialRs editCredential(String username, EditCredentialRq rq) {
+        UserAuthJpaEntity existAuth = this.validateUsernameAndPassword(username, rq.getCurrentPassword());
+        if (ObjectUtils.isEmpty(existAuth)) {
+            log.warn("editCredential() ... {}", ErrorCode.CR0008);
+            throw new BusinessException(HttpStatus.FORBIDDEN, ErrorCode.CR0008);
+        }
+
+        this.validateUsernameFormat(rq.getUsername());
+        this.validatePasswordFormat(rq.getPassword());
+
+        Date currentDate = new Date();
+        EditCredentialRs rs = new EditCredentialRs();
+        try {
+            boolean isAuthChanged = false;
+            if (!ObjectUtils.isEmpty(rq.getUsername()) && !existAuth.getUsername().equals(rq.getUsername())) {
+                existAuth.setUsername(rq.getUsername());
+                isAuthChanged = true;
+            }
+            if (!ObjectUtils.isEmpty(rq.getPassword()) && !existAuth.getPassword().equals(rq.getPassword())) {
+                existAuth.setPassword(this.encryptPassword(rq.getPassword()));
+                isAuthChanged = true;
+            }
+            if (isAuthChanged) {
+                existAuth.setUpdateBy(existAuth.getId());
+                existAuth.setUpdatedDatetime(currentDate);
+                existAuth.setToken(null);
+            }
+
+            UserAuthJpaEntity saveAuth = userAuthJpaRepository.save(existAuth);
+            rs.setUsername(saveAuth.getUsername());
+            rs.setPassword(null);
+            return rs;
+        } catch (Exception ex) {
+            log.error("editCredential() ... {} / message: {}", ErrorCode.DB0003, ex.getMessage());
+            throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.DB0003);
+        }
     }
 }

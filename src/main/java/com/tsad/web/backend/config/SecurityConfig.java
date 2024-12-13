@@ -27,6 +27,7 @@ public class SecurityConfig {
                         .requestMatchers("/public/**").permitAll()
                         .requestMatchers("/login").permitAll()
                         .requestMatchers("/logout").hasAnyRole("MEMBER", "ADMIN", "MASTER")
+                        .requestMatchers("/auth/**").hasAnyRole("MEMBER", "ADMIN", "MASTER")
                         .requestMatchers("/member/**").hasAnyRole("MEMBER", "ADMIN", "MASTER")
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MASTER")
                         .requestMatchers("/master/**").hasAnyRole("MASTER")
@@ -36,5 +37,4 @@ public class SecurityConfig {
                 .logout(logout -> logout.permitAll().disable());
         return http.build();
     }
-
 }

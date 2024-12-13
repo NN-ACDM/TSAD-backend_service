@@ -9,6 +9,7 @@ public enum ErrorCode {
     CR0005("username or password is invalid"),
     CR0006("user ID should not be NULL"),
     CR0007("user is inactive"),
+    CR0008("current password is invalid"),
 
     // Database
     DB0001("save token failed"),

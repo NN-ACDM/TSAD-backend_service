@@ -42,30 +42,21 @@ public class UserManagementService {
         this.credentialService = credentialService;
     }
 
-    private final int USERNAME_MAX_LENGTH = 24;
-    private final int PASSWORD_MAX_LENGTH = 64;
     private final int FIRST_NAME_MAX_LENGTH = 48;
     private final int LAST_NAME_MAX_LENGTH = 48;
     private final int EMAIL_MAX_LENGTH = 32;
     private final int MOBILE_MAX_LENGTH = 20;
     private final int PROFESSIONAL_LICENSE_MAX_LENGTH = 20;
+
     private final SimpleDateFormat dateFormat = new SimpleDateFormat(DateFormat.DATETIME.toString());
 
-    private void validateUsernameFormat(String newUsername) {
-        if (!ObjectUtils.isEmpty(newUsername)) {
-            if (newUsername.length() > USERNAME_MAX_LENGTH ||
-                    !newUsername.matches("^[a-z0-9_]+$")) {
-                log.error("validateUsernameFormat() ... {}", ErrorCode.UM0003);
-                throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0003);
-            }
-        }
-    }
-
-    private void validatePasswordFormat(String newPassword) {
-        if (!ObjectUtils.isEmpty(newPassword)) {
-            if (newPassword.length() > PASSWORD_MAX_LENGTH) {
-                log.error("validatePasswordFormat() ... {}", ErrorCode.UM0004);
-                throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0004);
+    private void validateLevelFormat(String newLevel) {
+        if (!ObjectUtils.isEmpty(newLevel)) {
+            if (!(UserLevel.MEMBER.toString().equals(newLevel) ||
+                    UserLevel.ADMIN.toString().equals(newLevel) ||
+                    UserLevel.MASTER.toString().equals(newLevel))) {
+                log.error("validateLevelFormat() ... {}", ErrorCode.UM0010);
+                throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0010);
             }
         }
     }
@@ -118,46 +109,6 @@ public class UserManagementService {
                 throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0009);
             }
         }
-    }
-
-    private void validateLevelFormat(String newLevel) {
-        if (!ObjectUtils.isEmpty(newLevel)) {
-            if (!(UserLevel.MEMBER.toString().equals(newLevel) ||
-                    UserLevel.ADMIN.toString().equals(newLevel) ||
-                    UserLevel.MASTER.toString().equals(newLevel))) {
-                log.error("validateLevelFormat() ... {}", ErrorCode.UM0010);
-                throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0010);
-            }
-        }
-    }
-
-    public ValidateUsernameRs validateUsername(String newUsername) {
-        ValidateUsernameRs rs = new ValidateUsernameRs();
-        Optional<UserAuthJpaEntity> userAuthOpt = userAuthJpaRepository.findByUsername(newUsername);
-        if (userAuthOpt.isPresent()) {
-            log.warn("validateUsername() ... {}", ErrorCode.UM0014);
-            rs.setAvailable(false);
-            rs.setMessage(ErrorCode.UM0014.toString());
-            return rs;
-        }
-        Optional<UserProfileJpaEntity> userProfileOpt = userProfileJpaRepository.findByProfessionalLicense(newUsername);
-        if (userProfileOpt.isPresent()) {
-            log.warn("validateUsername() ... {}", ErrorCode.UM0016);
-            rs.setAvailable(false);
-            rs.setMessage(ErrorCode.UM0016.toString());
-            return rs;
-        }
-        try {
-            this.validateUsernameFormat(newUsername);
-        } catch (BusinessException ex) {
-            log.warn("validateUsername() ... {}", ex.getMessage());
-            rs.setAvailable(false);
-            rs.setMessage(ex.getMessage());
-            return rs;
-        }
-        rs.setAvailable(true);
-        rs.setMessage("username is available");
-        return rs;
     }
 
     public ValidateProfessionalLcRs validateProfessionalLicense(String newProfessionalLicense) {
@@ -223,8 +174,6 @@ public class UserManagementService {
     public AddUserRs addUser(BigInteger makerId,
                              AddUserRq rq) {
 
-        this.validateUsernameFormat(rq.getUsername());
-        this.validatePasswordFormat(rq.getPassword());
         this.validateFirstNameFormat(rq.getFirstName());
         this.validateLastNameFormat(rq.getLastName());
         this.validateEmailFormat(rq.getEmail());
@@ -305,11 +254,8 @@ public class UserManagementService {
         }
     }
 
-    @Transactional
-    public EditUserRs editUserByForm(BigInteger makerId,
-                                     EditUserRq rq) {
-        this.validateUsernameFormat(rq.getUsername());
-        this.validatePasswordFormat(rq.getPassword());
+    public EditUserProfileRs editUserProfile(BigInteger makerId,
+                                             EditUserProfileRq rq) {
         this.validateFirstNameFormat(rq.getFirstName());
         this.validateLastNameFormat(rq.getLastName());
         this.validateEmailFormat(rq.getEmail());
@@ -319,7 +265,7 @@ public class UserManagementService {
 
         Optional<UserProfileJpaEntity> existProfileOpt = userProfileJpaRepository.findById(rq.getUserProfileId());
         if (existProfileOpt.isEmpty()) {
-            log.error("editUserByForm() ... {}", ErrorCode.UM0001);
+            log.error("editUserProfile() ... {}", ErrorCode.UM0001);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0001);
         }
 
@@ -327,14 +273,14 @@ public class UserManagementService {
 
         Optional<UserAuthJpaEntity> existAuthOpt = userAuthJpaRepository.findByUserProfileId(existProfile.getId());
         if (existAuthOpt.isEmpty()) {
-            log.error("editUserByForm() ... {}", ErrorCode.UM0002);
+            log.error("editUserProfile() ... {}", ErrorCode.UM0002);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0002);
         }
 
         UserAuthJpaEntity existAuth = existAuthOpt.get();
 
         Date currentDate = new Date();
-        EditUserRs rs = new EditUserRs();
+        EditUserProfileRs rs = new EditUserProfileRs();
         try {
             boolean isProfileChanged = false;
             if (!ObjectUtils.isEmpty(rq.getFirstName()) && !existProfile.getFirstName().equals(rq.getFirstName())) {
@@ -365,18 +311,6 @@ public class UserManagementService {
             UserProfileJpaEntity savedProfile = userProfileJpaRepository.save(existProfile);
 
             boolean isAuthChanged = false;
-            if (!ObjectUtils.isEmpty(rq.getUsername()) && !existAuth.getUsername().equals(rq.getUsername())) {
-                existAuth.setUsername(rq.getUsername());
-                isAuthChanged = true;
-            }
-            if (!ObjectUtils.isEmpty(rq.getPassword()) && !existAuth.getPassword().equals(rq.getPassword())) {
-                existAuth.setPassword(credentialService.encryptPassword(rq.getPassword()));
-                isAuthChanged = true;
-            }
-            if (!ObjectUtils.isEmpty(rq.getIsActive()) && existAuth.isActive() != rq.getIsActive()) {
-                existAuth.setActive(rq.getIsActive());
-                isAuthChanged = true;
-            }
             if (!ObjectUtils.isEmpty(rq.getLevel()) && !existAuth.getLevel().equals(rq.getLevel())) {
                 existAuth.setLevel(rq.getLevel());
                 isAuthChanged = true;
@@ -387,19 +321,17 @@ public class UserManagementService {
             }
 
             UserAuthJpaEntity saveAuth = userAuthJpaRepository.save(existAuth);
-
+            rs.setUserProfileId(savedProfile.getId());
             rs.setFirstName(savedProfile.getFirstName());
             rs.setLastName(savedProfile.getLastName());
             rs.setEmail(savedProfile.getEmail());
             rs.setMobile(savedProfile.getMobile());
             rs.setProfessionalLicense(savedProfile.getProfessionalLicense());
-            rs.setUsername(saveAuth.getUsername());
-            rs.setPassword(null);
             rs.setLevel(saveAuth.getLevel());
 
             return rs;
         } catch (Exception ex) {
-            log.error("editUserByForm() ... {} / message: {}", ErrorCode.DB0003, ex.getMessage());
+            log.error("editUserProfile() ... {} / message: {}", ErrorCode.DB0003, ex.getMessage());
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.DB0003);
         }
     }
