@@ -12,7 +12,6 @@ import com.tsad.web.backend.repository.webservicedb.jpa.UserProfileJpaRepository
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserAuthJpaEntity;
 import com.tsad.web.backend.repository.webservicedb.jpa.model.UserProfileJpaEntity;
 import com.tsad.web.backend.service.authentication.CredentialService;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -44,7 +43,7 @@ public class UserManagementService {
     }
 
     private final int USERNAME_MAX_LENGTH = 24;
-    private final int PASSWORD_MAX_LENGTH = 48;
+    private final int PASSWORD_MAX_LENGTH = 64;
     private final int FIRST_NAME_MAX_LENGTH = 48;
     private final int LAST_NAME_MAX_LENGTH = 48;
     private final int EMAIL_MAX_LENGTH = 32;
@@ -280,7 +279,8 @@ public class UserManagementService {
             UserAuthJpaEntity auth = new UserAuthJpaEntity();
             auth.setUserProfileId(savedProfile.getId());
             auth.setUsername(rq.getUsername() == null ? savedProfile.getProfessionalLicense() : rq.getUsername());
-            auth.setPassword(rq.getPassword() == null ? credentialService.generateDefaultPassword(auth.getUsername()) : rq.getPassword());
+            String password = rq.getPassword() == null ? credentialService.generateDefaultPassword(auth.getUsername()) : rq.getPassword();
+            auth.setPassword(credentialService.encryptPassword(password));
             auth.setToken(null);
             auth.setLevel(rq.getLevel() == null ? UserLevel.MEMBER.toString() : rq.getLevel());
             auth.setActive(true);
@@ -370,11 +370,11 @@ public class UserManagementService {
                 isAuthChanged = true;
             }
             if (!ObjectUtils.isEmpty(rq.getPassword()) && !existAuth.getPassword().equals(rq.getPassword())) {
-                existAuth.setPassword(rq.getPassword());
+                existAuth.setPassword(credentialService.encryptPassword(rq.getPassword()));
                 isAuthChanged = true;
             }
-            if (existAuth.isActive() != rq.isActive()) {
-                existAuth.setActive(rq.isActive());
+            if (!ObjectUtils.isEmpty(rq.getIsActive()) && existAuth.isActive() != rq.getIsActive()) {
+                existAuth.setActive(rq.getIsActive());
                 isAuthChanged = true;
             }
             if (!ObjectUtils.isEmpty(rq.getLevel()) && !existAuth.getLevel().equals(rq.getLevel())) {
@@ -394,7 +394,7 @@ public class UserManagementService {
             rs.setMobile(savedProfile.getMobile());
             rs.setProfessionalLicense(savedProfile.getProfessionalLicense());
             rs.setUsername(saveAuth.getUsername());
-            rs.setPassword(StringUtils.leftPad("", saveAuth.getPassword().length(), "*"));
+            rs.setPassword(null);
             rs.setLevel(saveAuth.getLevel());
 
             return rs;

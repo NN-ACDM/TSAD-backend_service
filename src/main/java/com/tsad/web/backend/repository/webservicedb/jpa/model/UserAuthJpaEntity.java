@@ -48,12 +48,4 @@ public class UserAuthJpaEntity {
 
     @Column(name = "last_login_datetime")
     private Date lastLoginDatetime;
-
-//    public void setPassword() {
-//
-//    }
-//
-//    public String getPassword() {
-//
-//    }
 }

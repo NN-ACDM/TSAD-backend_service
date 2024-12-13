@@ -26,7 +26,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) throws BusinessException {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         log.info("login() ... username: {} is trying to login", request.getUsername());
         String token = credentialService.login(request);
         HttpHeaders headers = new HttpHeaders();

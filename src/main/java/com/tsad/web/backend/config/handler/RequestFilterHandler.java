@@ -9,7 +9,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +40,11 @@ public class RequestFilterHandler extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(@NotNull HttpServletRequest request,
+    protected void doFilterInternal(@Nullable HttpServletRequest request,
                                     @Nullable HttpServletResponse response,
                                     @Nullable FilterChain filterChain) throws ServletException, IOException {
         try {
+            assert request != null;
             UserAuthJpaEntity user = credentialService.validateUsernameAndToken(
                     request.getHeader(RequestHeaderName.USERNAME),
                     request.getHeader(HttpHeaders.AUTHORIZATION));
@@ -60,27 +60,18 @@ public class RequestFilterHandler extends OncePerRequestFilter {
                 log.debug("doFilterInternal() ... SecurityContext: {}", SecurityContextHolder.getContext().getAuthentication());
             }
         } catch (BusinessException ex) {
-            if (!ObjectUtils.isEmpty(response)) {
-                this.setErrorResponse(response, ex);
-            }
+            assert response != null;
+            response.setHeader("Accept", "application/json");
+            response.setHeader("Content-type", "application/json");
+            response.setStatus(ex.getHttpStatus().value());
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("message", ex.getMessage());
+            jsonObject.put("code", ex.getErrorCode());
+            response.getWriter().write(jsonObject.toString());
+            response.getWriter().flush();
             return;
         }
-
-        if (filterChain != null) {
-            filterChain.doFilter(request, response);
-        } else {
-            log.error("doFilterInternal() ... filterChain is Null");
-        }
-    }
-
-    private void setErrorResponse(HttpServletResponse response, BusinessException ex) throws IOException {
-        response.setHeader("Accept", "application/json");
-        response.setHeader("Content-type", "application/json");
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("message", ex.getMessage());
-        jsonObject.put("code", ex.getErrorCode());
-        response.getWriter().write(jsonObject.toString());
-        response.getWriter().flush();
+        assert filterChain != null;
+        filterChain.doFilter(request, response);
     }
 }

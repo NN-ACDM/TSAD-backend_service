@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,8 +16,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleBusinessException(BusinessException ex) {
         Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("timestamp", LocalDateTime.now().toString());
-        errorResponse.put("errorCode", ex.getErrorCode());
+        errorResponse.put("code", ex.getErrorCode());
         errorResponse.put("message", ex.getMessage());
 
         HttpHeaders headers = new HttpHeaders();
@@ -29,9 +27,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
         Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("timestamp", LocalDateTime.now().toString());
-        errorResponse.put("error", ex.toString());
-//        errorResponse.put("message", ex.getMessage());
+        StackTraceElement stackTrace = ex.getStackTrace()[0];
+        errorResponse.put("trace", String.format("%s (line: %s)", stackTrace.getClassName(), stackTrace.getLineNumber()));
+        errorResponse.put("message", ex.getMessage());
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-type", "application/json");

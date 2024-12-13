@@ -18,5 +18,5 @@ public class EditUserRq {
     private String username;
     private String password;
     private String level;
-    private boolean isActive;
+    private Boolean isActive;
 }

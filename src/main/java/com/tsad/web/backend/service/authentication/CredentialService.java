@@ -1,5 +1,6 @@
 package com.tsad.web.backend.service.authentication;
 
+import com.tsad.web.backend.common.CryptoUtils;
 import com.tsad.web.backend.common.ErrorCode;
 import com.tsad.web.backend.config.BusinessException;
 import com.tsad.web.backend.controller.authentication.model.LoginRequest;
@@ -22,15 +23,18 @@ public class CredentialService {
     private static final Logger log = LoggerFactory.getLogger(CredentialService.class);
 
     private final UserAuthJpaRepository userAuthJpaRepository;
+    private final CryptoUtils cryptoUtils;
 
-    public CredentialService(UserAuthJpaRepository userAuthJpaRepository) {
+    public CredentialService(UserAuthJpaRepository userAuthJpaRepository,
+                             CryptoUtils cryptoUtils) {
         this.userAuthJpaRepository = userAuthJpaRepository;
+        this.cryptoUtils = cryptoUtils;
     }
 
     private String generateToken() {
         String token = UUID.randomUUID().toString();
         while (!ObjectUtils.isEmpty(userAuthJpaRepository.findByToken(token))) {
-            log.warn("generateToken() ... found duplicate token : {}", token);
+            log.error("generateToken() ... found duplicate token : {}", token);
             token = UUID.randomUUID().toString();
         }
         return token;
@@ -47,24 +51,23 @@ public class CredentialService {
 
     private UserAuthJpaEntity validateUsernameAndPassword(String username, String password) throws BusinessException {
         if (ObjectUtils.isEmpty(username)) {
-            log.warn("validateUsernameAndPassword() ... {}", ErrorCode.CR0002);
+            log.info("validateUsernameAndPassword() ... {}", ErrorCode.CR0002);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0002);
         }
         if (ObjectUtils.isEmpty(password)) {
-            log.warn("validateUsernameAndPassword() ... {}", ErrorCode.CR0003);
+            log.info("validateUsernameAndPassword() ... {}", ErrorCode.CR0003);
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0003);
         }
 
         Optional<UserAuthJpaEntity> userOpt = userAuthJpaRepository.findByUsernameAndPassword(username, password);
-        if (userOpt.isPresent()) {
-            if (!userOpt.get().isActive()) {
-                log.warn("validateUsernameAndPassword() ... {}", ErrorCode.CR0007);
-                throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0007);
-            }
-            return userOpt.get();
+        if (userOpt.isEmpty()) {
+            log.info("validateUsernameAndPassword() ... {}", ErrorCode.CR0005);
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, ErrorCode.CR0005);
+        } else if (!userOpt.get().isActive()) {
+            log.warn("validateUsernameAndPassword() ... {}", ErrorCode.CR0007);
+            throw new BusinessException(HttpStatus.FORBIDDEN, ErrorCode.CR0007);
         } else {
-            log.warn("validateUsernameAndPassword() ... {}", ErrorCode.CR0005);
-            throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0005);
+            return userOpt.get();
         }
     }
 
@@ -86,7 +89,7 @@ public class CredentialService {
             return user;
         } else {
             log.warn("validateUsernameAndToken() ... {}", ErrorCode.CR0004);
-            throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0004);
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, ErrorCode.CR0004);
         }
     }
 
@@ -123,6 +126,10 @@ public class CredentialService {
     public String generateDefaultPassword(String username) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
-        return String.format("TSAD-%s?%s", calendar.get(Calendar.YEAR), username);
+        return cryptoUtils.hashSHA256(String.format("TSAD-%s?%s", calendar.get(Calendar.YEAR), username));
+    }
+
+    public String encryptPassword(String input) {
+        return cryptoUtils.bCryptPasswordEncoder(input);
     }
 }

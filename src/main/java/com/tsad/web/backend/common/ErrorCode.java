@@ -5,7 +5,7 @@ public enum ErrorCode {
     CR0001("token is empty"),
     CR0002("username is empty"),
     CR0003("password is empty"),
-    CR0004("token is invalid"),
+    CR0004("token is invalid or expired"),
     CR0005("username or password is invalid"),
     CR0006("user ID should not be NULL"),
     CR0007("user is inactive"),
