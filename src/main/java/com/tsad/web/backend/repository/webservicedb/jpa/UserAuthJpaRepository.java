@@ -11,9 +11,7 @@ import java.util.Set;
 @Repository
 public interface UserAuthJpaRepository extends JpaRepository<UserAuthJpaEntity, BigInteger> {
     Set<UserAuthJpaEntity> findByToken(String token);
-
     Optional<UserAuthJpaEntity> findByUsername(String username);
-
     Optional<UserAuthJpaEntity> findByUserProfileId(BigInteger id);
     Optional<UserAuthJpaEntity> findByUsernameAndToken(String username, String token);
     Optional<UserAuthJpaEntity> findByUsernameAndPassword(String username, String password);

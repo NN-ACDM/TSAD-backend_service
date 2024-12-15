@@ -239,6 +239,7 @@ public class UserManagementService {
             UserAuthJpaEntity saveAuth = userAuthJpaRepository.save(auth);
 
             AddUserRs rs = new AddUserRs();
+            rs.setUserProfileId(savedProfile.getId());
             rs.setFirstName(profile.getFirstName());
             rs.setLastName(profile.getLastName());
             rs.setEmail(profile.getEmail());

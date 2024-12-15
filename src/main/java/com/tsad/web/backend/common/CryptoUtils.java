@@ -2,7 +2,6 @@ package com.tsad.web.backend.common;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
@@ -12,10 +11,15 @@ import java.security.NoSuchAlgorithmException;
 public class CryptoUtils {
     private static final Logger log = LoggerFactory.getLogger(CryptoUtils.class);
 
-    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-
-    public String bCryptPasswordEncoder(String input) {
-        return bCryptPasswordEncoder.encode(input);
+    public String hashSHA384(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-384");
+            byte[] encodedHash = digest.digest(input.getBytes());
+            return bytesToHex(encodedHash);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("hash() ... Error generating SHA-384 hash");
+            throw new RuntimeException("hash() ... Error generating SHA-384 hash", e);
+        }
     }
 
     public String hashSHA256(String input) {
@@ -24,7 +28,7 @@ public class CryptoUtils {
             byte[] encodedHash = digest.digest(input.getBytes());
             return bytesToHex(encodedHash);
         } catch (NoSuchAlgorithmException e) {
-            log.error("hash() ... Error generating SHA-256 hash");
+            log.error("hashSHA256() ... Error generating SHA-256 hash");
             throw new RuntimeException("hash() ... Error generating SHA-256 hash", e);
         }
     }

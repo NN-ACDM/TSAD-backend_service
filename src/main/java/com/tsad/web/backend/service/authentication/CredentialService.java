@@ -70,7 +70,7 @@ public class CredentialService {
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0003);
         }
 
-        Optional<UserAuthJpaEntity> userOpt = userAuthJpaRepository.findByUsernameAndPassword(username, password);
+        Optional<UserAuthJpaEntity> userOpt = userAuthJpaRepository.findByUsernameAndPassword(username, cryptoUtils.hashSHA384(password));
         if (userOpt.isEmpty()) {
             log.info("validateUsernameAndPassword() ... {}", ErrorCode.CR0005);
             throw new BusinessException(HttpStatus.UNAUTHORIZED, ErrorCode.CR0005);
@@ -200,7 +200,7 @@ public class CredentialService {
     }
 
     public String encryptPassword(String input) {
-        return cryptoUtils.bCryptPasswordEncoder(input);
+        return cryptoUtils.hashSHA384(input);
     }
 
     public EditCredentialRs editCredential(String username, EditCredentialRq rq) {
