@@ -25,14 +25,26 @@ public class UserAuthJpaEntity {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "token")
-    private String token;
+    @Column(name = "access_token")
+    private String accessToken;
+
+    @Column(name = "access_token_expiration")
+    private String accessTokenExpiration;
+
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
+    @Column(name = "refresh_token_expiration")
+    private String refreshTokenExpiration;
 
     @Column(name = "level")
     private String level;
 
     @Column(name = "is_active")
     private boolean isActive;
+
+    @Column(name = "is_unlock")
+    private boolean isUnlock;
 
     @Column(name = "create_by")
     private BigInteger createBy;

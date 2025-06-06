@@ -13,7 +13,7 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RuntimeException.class)
+    @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, String>> handleBusinessException(BusinessException ex) {
         Map<String, String> errorResponse = new HashMap<>();
         errorResponse.put("code", ex.getErrorCode());
@@ -22,6 +22,17 @@ public class GlobalExceptionHandler {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-type", "application/json");
         return ResponseEntity.status(ex.getHttpStatus()).headers(headers).body(errorResponse);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("code", "Runtime Exception");
+        errorResponse.put("message", ex.getMessage());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-type", "application/json");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)

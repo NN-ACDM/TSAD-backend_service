@@ -1,6 +1,6 @@
 spring:
   application:
-    name: TSAD-Backend
+    name: TSAD-Backend-Service
   servlet:
     multipart:
       max-file-size: 100MB
@@ -16,6 +16,10 @@ cloud:
       secret-key: fh1dLrJwLyh2lQTeCkoMoDBAIMQlLSUonr8p7pGt
     region:
       static: ap-southeast-1
+
+security:
+  jwt-token:
+    secret: awxpkiUL888SL2ylEa8ZWktkKUOVRPfL
 
 webservicedb:
   datasource:

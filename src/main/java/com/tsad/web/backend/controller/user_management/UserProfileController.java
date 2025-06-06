@@ -1,9 +1,11 @@
 package com.tsad.web.backend.controller.user_management;
 
+import com.tsad.web.backend.config.BusinessException;
 import com.tsad.web.backend.controller.user_management.model.*;
 import com.tsad.web.backend.service.user_management.UserManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,11 +26,8 @@ public class UserProfileController {
     private static final String EDIT_USER_PROFILE_URL = "/edit-profile";
     private static final String DELETE_USER_URL = "/delete";
 
-    private final UserManagementService userManagementService;
-
-    public UserProfileController(UserManagementService userManagementService) {
-        this.userManagementService = userManagementService;
-    }
+    @Autowired
+    private UserManagementService userManagementService;
 
     private BigInteger getUserIDFromSecurityContextHolder() {
         try {
@@ -58,7 +57,7 @@ public class UserProfileController {
     }
 
     @PostMapping(ADD_USER_URL)
-    public AddUserRs addUser(@RequestBody AddUserRq rq) {
+    public AddUserRs addUser(@RequestBody AddUserRq rq) throws BusinessException {
         BigInteger userId = this.getUserIDFromSecurityContextHolder();
         log.info("addUser() ... url: {} -> ID: {}, request: {}", ADD_USER_URL, userId, rq);
         AddUserRs rs = userManagementService.addUser(userId, rq);
@@ -67,7 +66,7 @@ public class UserProfileController {
     }
 
     @PatchMapping(EDIT_USER_PROFILE_URL)
-    public EditUserProfileRs editUserProfile(@RequestBody EditUserProfileRq rq) {
+    public EditUserProfileRs editUserProfile(@RequestBody EditUserProfileRq rq) throws BusinessException {
         BigInteger userId = this.getUserIDFromSecurityContextHolder();
         log.info("editUserProfile() ... url: {} -> ID: {}, request: {}", EDIT_USER_PROFILE_URL, userId, rq);
         EditUserProfileRs rs = userManagementService.editUserProfile(userId, rq);
@@ -76,7 +75,7 @@ public class UserProfileController {
     }
 
     @DeleteMapping(DELETE_USER_URL)
-    public ResponseEntity<?> deleteUser(@RequestBody DeleteUserRq rq) {
+    public ResponseEntity<?> deleteUser(@RequestBody DeleteUserRq rq) throws BusinessException {
         BigInteger userId = this.getUserIDFromSecurityContextHolder();
         log.info("deleteUser() ... url: {} -> ID: {}, request: {}", DELETE_USER_URL, userId, rq);
         userManagementService.deleteUser(rq);

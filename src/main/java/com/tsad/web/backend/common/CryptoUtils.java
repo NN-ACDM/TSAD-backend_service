@@ -17,8 +17,8 @@ public class CryptoUtils {
             byte[] encodedHash = digest.digest(input.getBytes());
             return bytesToHex(encodedHash);
         } catch (NoSuchAlgorithmException e) {
-            log.error("hash() ... Error generating SHA-384 hash");
-            throw new RuntimeException("hash() ... Error generating SHA-384 hash", e);
+            log.error("hashSHA384() ... Error generating SHA-384 hash");
+            throw new RuntimeException("hashSHA384() ... Error generating SHA-384 hash", e);
         }
     }
 
@@ -29,7 +29,7 @@ public class CryptoUtils {
             return bytesToHex(encodedHash);
         } catch (NoSuchAlgorithmException e) {
             log.error("hashSHA256() ... Error generating SHA-256 hash");
-            throw new RuntimeException("hash() ... Error generating SHA-256 hash", e);
+            throw new RuntimeException("hashSHA256() ... Error generating SHA-256 hash", e);
         }
     }
 

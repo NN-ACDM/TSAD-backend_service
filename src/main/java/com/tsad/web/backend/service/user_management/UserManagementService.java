@@ -14,6 +14,7 @@ import com.tsad.web.backend.repository.webservicedb.jpa.model.UserProfileJpaEnti
 import com.tsad.web.backend.service.authentication.CredentialService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,20 +28,17 @@ import java.util.*;
 public class UserManagementService {
     private static final Logger log = LoggerFactory.getLogger(UserManagementService.class);
 
-    private final UserProfileJpaRepository userProfileJpaRepository;
-    private final UserAuthJpaRepository userAuthJpaRepository;
-    private final UserJdbcRepository userJdbcRepository;
-    private final CredentialService credentialService;
+    @Autowired
+    private UserProfileJpaRepository userProfileJpaRepository;
 
-    public UserManagementService(UserProfileJpaRepository userProfileJpaRepository,
-                                 UserAuthJpaRepository userAuthJpaRepository,
-                                 UserJdbcRepository userJdbcRepository,
-                                 CredentialService credentialService) {
-        this.userProfileJpaRepository = userProfileJpaRepository;
-        this.userAuthJpaRepository = userAuthJpaRepository;
-        this.userJdbcRepository = userJdbcRepository;
-        this.credentialService = credentialService;
-    }
+    @Autowired
+    private UserAuthJpaRepository userAuthJpaRepository;
+
+    @Autowired
+    private UserJdbcRepository userJdbcRepository;
+
+    @Autowired
+    private CredentialService credentialService;
 
     private final int FIRST_NAME_MAX_LENGTH = 48;
     private final int LAST_NAME_MAX_LENGTH = 48;
@@ -50,7 +48,7 @@ public class UserManagementService {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat(DateFormat.DATETIME.toString());
 
-    private void validateLevelFormat(String newLevel) {
+    private void validateLevelFormat(String newLevel) throws BusinessException {
         if (!ObjectUtils.isEmpty(newLevel)) {
             if (!(UserLevel.MEMBER.toString().equals(newLevel) ||
                     UserLevel.ADMIN.toString().equals(newLevel) ||
@@ -61,7 +59,7 @@ public class UserManagementService {
         }
     }
 
-    private void validateFirstNameFormat(String newFirstName) {
+    private void validateFirstNameFormat(String newFirstName) throws BusinessException {
         if (!ObjectUtils.isEmpty(newFirstName)) {
             if (newFirstName.length() > FIRST_NAME_MAX_LENGTH ||
                     !newFirstName.matches("[a-zA-Z]+")) {
@@ -71,7 +69,7 @@ public class UserManagementService {
         }
     }
 
-    private void validateLastNameFormat(String newLastName) {
+    private void validateLastNameFormat(String newLastName) throws BusinessException {
         if (!ObjectUtils.isEmpty(newLastName)) {
             if (newLastName.length() > LAST_NAME_MAX_LENGTH ||
                     !newLastName.matches("[a-zA-Z]+")) {
@@ -81,7 +79,7 @@ public class UserManagementService {
         }
     }
 
-    private void validateEmailFormat(String newEmail) {
+    private void validateEmailFormat(String newEmail) throws BusinessException {
         if (!ObjectUtils.isEmpty(newEmail)) {
             if (newEmail.length() > EMAIL_MAX_LENGTH ||
                     !newEmail.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
@@ -91,7 +89,7 @@ public class UserManagementService {
         }
     }
 
-    private void validateMobileFormat(String newMobile) {
+    private void validateMobileFormat(String newMobile) throws BusinessException {
         if (!ObjectUtils.isEmpty(newMobile)) {
             if (newMobile.length() > MOBILE_MAX_LENGTH ||
                     !newMobile.matches("^[0-9]+$")) {
@@ -101,7 +99,7 @@ public class UserManagementService {
         }
     }
 
-    private void validateProfessionalLicenseFormat(String newProfessionalLicense) {
+    private void validateProfessionalLicenseFormat(String newProfessionalLicense) throws BusinessException {
         if (!ObjectUtils.isEmpty(newProfessionalLicense)) {
             if (newProfessionalLicense.length() > PROFESSIONAL_LICENSE_MAX_LENGTH ||
                     !newProfessionalLicense.matches("^[a-z0-9_]+$")) {
@@ -172,7 +170,7 @@ public class UserManagementService {
 
     @Transactional
     public AddUserRs addUser(BigInteger makerId,
-                             AddUserRq rq) {
+                             AddUserRq rq) throws BusinessException {
 
         this.validateFirstNameFormat(rq.getFirstName());
         this.validateLastNameFormat(rq.getLastName());
@@ -230,7 +228,7 @@ public class UserManagementService {
             auth.setUsername(rq.getUsername() == null ? savedProfile.getProfessionalLicense() : rq.getUsername());
             String password = rq.getPassword() == null ? credentialService.generateDefaultPassword(auth.getUsername()) : rq.getPassword();
             auth.setPassword(credentialService.encryptPassword(password));
-            auth.setToken(null);
+            auth.setAccessToken(null);
             auth.setLevel(rq.getLevel() == null ? UserLevel.MEMBER.toString() : rq.getLevel());
             auth.setActive(true);
             auth.setCreateBy(makerId);
@@ -256,7 +254,7 @@ public class UserManagementService {
     }
 
     public EditUserProfileRs editUserProfile(BigInteger makerId,
-                                             EditUserProfileRq rq) {
+                                             EditUserProfileRq rq) throws BusinessException {
         this.validateFirstNameFormat(rq.getFirstName());
         this.validateLastNameFormat(rq.getLastName());
         this.validateEmailFormat(rq.getEmail());
@@ -338,7 +336,7 @@ public class UserManagementService {
     }
 
     @Transactional
-    public void deleteUser(DeleteUserRq rq) {
+    public void deleteUser(DeleteUserRq rq) throws BusinessException {
         Optional<UserProfileJpaEntity> existProfileOpt = userProfileJpaRepository.findById(rq.getDeleteUserID());
         if (existProfileOpt.isEmpty()) {
             log.error("deleteUser() ... {}", ErrorCode.UM0001);

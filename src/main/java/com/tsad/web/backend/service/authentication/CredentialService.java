@@ -43,12 +43,11 @@ public class CredentialService {
     }
 
     private String generateToken() {
-        String token = UUID.randomUUID().toString();
-        while (!ObjectUtils.isEmpty(userAuthJpaRepository.findByToken(token))) {
-            log.error("generateToken() ... found duplicate token : {}", token);
-            token = UUID.randomUUID().toString();
-        }
-        return token;
+        //        while (!ObjectUtils.isEmpty(userAuthJpaRepository.findByToken(token))) {
+//            log.error("generateToken() ... found duplicate token : {}", token);
+//            token = UUID.randomUUID().toString();
+//        }
+        return UUID.randomUUID().toString();
     }
 
     private String extractToken(String headerToken) throws BusinessException {
@@ -93,7 +92,7 @@ public class CredentialService {
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.CR0001);
         }
 
-        Optional<UserAuthJpaEntity> userOpt = userAuthJpaRepository.findByUsernameAndToken(headerUsername, token);
+        Optional<UserAuthJpaEntity> userOpt = userAuthJpaRepository.findByUsernameAndAccessToken(headerUsername, token);
         if (userOpt.isPresent()) {
             UserAuthJpaEntity user = userOpt.get();
             log.debug("validateUsernameAndToken() ... authenticate passed -> user: {}", user.getUsername());
@@ -104,7 +103,7 @@ public class CredentialService {
         }
     }
 
-    private void validateUsernameFormat(String newUsername) {
+    private void validateUsernameFormat(String newUsername) throws BusinessException {
         if (!ObjectUtils.isEmpty(newUsername)) {
             if (newUsername.length() > USERNAME_MAX_LENGTH ||
                     !newUsername.matches("^[a-z0-9_]+$")) {
@@ -114,7 +113,7 @@ public class CredentialService {
         }
     }
 
-    private void validatePasswordFormat(String newPassword) {
+    private void validatePasswordFormat(String newPassword) throws BusinessException {
         if (!ObjectUtils.isEmpty(newPassword)) {
             if (newPassword.length() > PASSWORD_MAX_LENGTH) {
                 log.error("validatePasswordFormat() ... {}", ErrorCode.UM0004);
@@ -122,17 +121,6 @@ public class CredentialService {
             }
         }
     }
-
-//    private void validateLevelFormat(String newLevel) {
-//        if (!ObjectUtils.isEmpty(newLevel)) {
-//            if (!(UserLevel.MEMBER.toString().equals(newLevel) ||
-//                    UserLevel.ADMIN.toString().equals(newLevel) ||
-//                    UserLevel.MASTER.toString().equals(newLevel))) {
-//                log.error("validateLevelFormat() ... {}", ErrorCode.UM0010);
-//                throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.UM0010);
-//            }
-//        }
-//    }
 
     public ValidateUsernameRs checkAvailableUsername(String newUsername) {
         ValidateUsernameRs rs = new ValidateUsernameRs();
@@ -163,18 +151,18 @@ public class CredentialService {
         return rs;
     }
 
-    public String login(LoginRequest rq) {
+    public String login(LoginRequest rq) throws BusinessException {
         UserAuthJpaEntity user = this.validateUsernameAndPassword(rq.getUsername(), rq.getPassword());
-        user.setToken(this.generateToken());
+        user.setAccessToken(this.generateToken());
         user.setLastLoginDatetime(new Date());
         userAuthJpaRepository.save(user);
         log.info("login() ... username: {} is successfully login", rq.getUsername());
-        return user.getToken();
+        return user.getAccessToken();
     }
 
-    public void logout(String username, String headerToken) {
+    public void logout(String username, String headerToken) throws BusinessException {
         UserAuthJpaEntity user = this.validateUsernameAndToken(username, headerToken);
-        user.setToken(null);
+        user.setAccessToken(null);
         userAuthJpaRepository.save(user);
         log.info("logout() ... username: {} is successfully logout", username);
     }
@@ -183,10 +171,10 @@ public class CredentialService {
         try {
             UserAuthJpaEntity user = this.validateUsernameAndToken(username, headerToken);
             String token = this.generateToken();
-            user.setToken(token);
+            user.setAccessToken(token);
             userAuthJpaRepository.save(user);
             log.debug("rotateToken() ... rotate token complete");
-            return user.getToken();
+            return user.getAccessToken();
         } catch (Exception ex) {
             log.error("rotateToken() ... {} / message: {}", ErrorCode.DB0001, ex.toString());
             throw ex;
@@ -203,7 +191,7 @@ public class CredentialService {
         return cryptoUtils.hashSHA384(input);
     }
 
-    public EditCredentialRs editCredential(String username, EditCredentialRq rq) {
+    public EditCredentialRs editCredential(String username, EditCredentialRq rq) throws BusinessException {
         UserAuthJpaEntity existAuth = this.validateUsernameAndPassword(username, rq.getCurrentPassword());
         if (ObjectUtils.isEmpty(existAuth)) {
             log.warn("editCredential() ... {}", ErrorCode.CR0008);
@@ -228,7 +216,7 @@ public class CredentialService {
             if (isAuthChanged) {
                 existAuth.setUpdateBy(existAuth.getId());
                 existAuth.setUpdatedDatetime(currentDate);
-                existAuth.setToken(null);
+                existAuth.setAccessToken(null);
             }
 
             UserAuthJpaEntity saveAuth = userAuthJpaRepository.save(existAuth);

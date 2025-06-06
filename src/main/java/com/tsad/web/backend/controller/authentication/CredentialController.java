@@ -6,6 +6,7 @@ import com.tsad.web.backend.controller.authentication.model.*;
 import com.tsad.web.backend.service.authentication.CredentialService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +23,10 @@ public class CredentialController {
     private static final Logger log = LoggerFactory.getLogger(CredentialController.class);
 
     private static final String VALIDATE_USERNAME_URL = "/auth/validate-username";
-    public static final String EDIT_CREDENTIAL_URL = "/auth/edit-credential";
+    private static final String EDIT_CREDENTIAL_URL = "/auth/edit-credential";
 
-    private final CredentialService credentialService;
-
-    public CredentialController(CredentialService credentialService) {
-        this.credentialService = credentialService;
-    }
+    @Autowired
+    private CredentialService credentialService;
 
     private BigInteger getUserIDFromSecurityContextHolder() {
         try {
@@ -40,12 +38,12 @@ public class CredentialController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) throws BusinessException {
         log.info("login() ... username: {} is trying to login", request.getUsername());
         String token = credentialService.login(request);
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
-        return ResponseEntity.status(HttpStatus.OK).headers(headers).body("login success");
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(null);
     }
 
     @PostMapping("/logout")

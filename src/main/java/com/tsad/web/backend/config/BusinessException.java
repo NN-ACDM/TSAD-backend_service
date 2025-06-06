@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class BusinessException extends RuntimeException {
+public class BusinessException extends Exception {
 
     private final String errorCode;
     private final HttpStatus httpStatus;
