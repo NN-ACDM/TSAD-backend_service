@@ -10,5 +10,9 @@ RUN apt-get update && apt-get install -y docker.io
 # Copy built JAR
 COPY target/*.jar app.jar
 
+# create app configuration directory
+RUN mkdir -p /app/config
+WORKDIR /app
+
 # Run the JAR and include config path
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.config.additional-location=file:./config/"]
+ENTRYPOINT ["java", "-jar", "app.jar", "--spring.config.additional-location=optional:file:./config/"]
