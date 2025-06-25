@@ -17,4 +17,4 @@ RUN mkdir -p /app/config
 COPY target/*.jar app.jar
 
 # Run the JAR with external config support
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.config.additional-location=optional:file:./config/"]
+ENTRYPOINT ["java", "-jar", "app.jar", "--spring.config.additional-location=optional:file:./config/", "--spring.profiles.active=dev"]
