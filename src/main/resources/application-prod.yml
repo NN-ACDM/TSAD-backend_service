@@ -44,6 +44,4 @@ logging:
       springframework:
         security=DEBUG:
 
-springdoc:
-  api-docs:
-    path: /tsad/api/v3/api-docs
+
