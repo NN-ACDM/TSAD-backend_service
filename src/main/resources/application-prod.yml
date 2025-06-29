@@ -44,4 +44,6 @@ logging:
       springframework:
         security=DEBUG:
 
-
+springdoc:
+  swagger-ui:
+    config-url: /tsad/api/v3/api-docs/swagger-config
