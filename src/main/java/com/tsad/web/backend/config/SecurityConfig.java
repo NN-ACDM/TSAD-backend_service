@@ -32,6 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MASTER")
                         .requestMatchers("/master/**").hasAnyRole("MASTER")
                         .requestMatchers("/payment/**").authenticated()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().permitAll()
                 ).addFilterBefore(requestFilterHandler, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout.permitAll().disable());
