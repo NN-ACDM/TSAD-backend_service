@@ -5,10 +5,11 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
-      context-path: /tsad/api
 
 server:
   port: 8090
+  servlet:
+    context-path: /tsad/api
 
 cloud:
   aws:
