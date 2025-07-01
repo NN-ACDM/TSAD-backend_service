@@ -28,7 +28,7 @@ webservicedb:
     poolName: webservicedb-pool
     connectionTimeOut: 10000
     maximumPoolSize: 20
-    jdbcUrl: jdbc:postgresql://192.168.1.20:5432/tsad_local_db
+    jdbcUrl: jdbc:postgresql://192.168.1.100:5433/tsad_local_db
     username: tsad_local
     password: tsad-24@local
     driver-class-name: org.postgresql.Driver
