@@ -8,6 +8,8 @@ spring:
 
 server:
   port: 8090
+  servlet:
+    context-path: /tsad/api
 
 cloud:
   aws:
@@ -43,3 +45,12 @@ logging:
     org:
       springframework:
         security=DEBUG:
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    url: /tsad/api/v3/api-docs
+    config-url: /tsad/api/v3/api-docs/swagger-config
+    disable-swagger-default-url: true
