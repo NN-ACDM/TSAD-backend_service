@@ -30,7 +30,7 @@ public class OpenApiConfig {
 
         Info infoConfig = new Info()
                 .title("Backend Service API")
-                .description("Remote Investment Service System - Backend")
+                .description("TSAD - Backend Service")
                 .version(appVersion);
 
         int port = serverProperties.getPort() != null ? serverProperties.getPort() : 8080;
